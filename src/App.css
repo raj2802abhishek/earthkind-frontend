@@ -1,0 +1,27 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: #f8f5ef;
+  overflow-x: hidden;
+  font-family: Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+@keyframes heroFade {
+  from {
+    opacity: 0.82;
+    transform: scale(1.01);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
