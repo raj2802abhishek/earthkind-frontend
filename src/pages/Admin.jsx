@@ -45,6 +45,20 @@ function Admin() {
   const [category, setCategory] =
     useState("");
 
+    const [story, setStory] =
+  useState("");
+
+const [benefits, setBenefits] =
+  useState([""]);
+
+const [howToUse, setHowToUse] =
+  useState([""]);
+
+const [ingredients, setIngredients] =
+  useState([""]);
+
+const [images, setImages] =
+  useState([]);
   // COUPONS
   const [coupons, setCoupons] =
     useState([]);
@@ -68,17 +82,7 @@ function Admin() {
   useState(0);
 
   // DISABLE PAGE SCROLL
-  useEffect(() => {
-
-    document.body.style.overflow =
-      "hidden";
-
-    return () => {
-      document.body.style.overflow =
-        "auto";
-    };
-
-  }, []);
+  
 
   // INITIAL FETCH
   useEffect(() => {
@@ -257,47 +261,89 @@ function Admin() {
   };
 
   // ADD PRODUCT
-  const addProduct = async () => {
+ const addProduct = async () => {
 
-    try {
+  try {
 
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/products/add`,
-        {
-          name,
-          price,
-          category,
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/products/add`,
+      {
 
-          description:
-            "Added from Admin Panel",
+        name,
 
-          image: imageUrl,
+        price,
 
-          stock: 10,
+        category,
 
-          rating: 5,
+        description:
+          "Premium Earthkind Naturals product",
 
-          reviews: 0
-        }
-      );
+        image: imageUrl,
 
-       toast.success(
-        "Product added successfully ✅"
-      );
+        /* NEW */
+        images:
+          images.length > 0
+            ? images
+            : [imageUrl],
 
-      setName("");
-      setPrice("");
-      setCategory("");
+        story,
 
-      fetchProducts();
+        benefits:
+          benefits.filter(
+            (item) =>
+              item.trim() !== ""
+          ),
 
-    } catch (error) {
+        howToUse:
+          howToUse.filter(
+            (item) =>
+              item.trim() !== ""
+          ),
 
-      console.log(error);
+        ingredients:
+          ingredients.filter(
+            (item) =>
+              item.trim() !== ""
+          ),
 
-    }
-  };
+        stock: 10,
 
+        rating: 5,
+
+        reviews: 0
+
+      }
+    );
+
+    toast.success(
+      "Product added successfully ✅"
+    );
+
+    /* RESET */
+
+    setName("");
+    setPrice("");
+    setCategory("");
+
+    setStory("");
+
+    setBenefits([""]);
+
+    setHowToUse([""]);
+
+    setIngredients([""]);
+
+    setImages([]);
+
+    fetchProducts();
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
+};
   // DELETE PRODUCT
   const deleteProduct = async (id) => {
 
@@ -369,24 +415,24 @@ function Admin() {
 
   return (
 
-    <div
+   <div
   style={{
     display: "flex",
 
     gap: "24px",
+    alignItems: "stretch",
 
-    alignItems: "flex-start",
+   
 
     background: "#ece9df",
 
-    padding: "20px 24px",
+    padding: "20px",
 
-    height: "119vh",
+    minHeight: "100vh",
 
-    overflow: "hidden"
+    overflow: "visible"
   }}
 >
-
       {/* SIDEBAR */}
       <AdminSidebar
         activeTab={activeTab}
@@ -400,7 +446,8 @@ function Admin() {
 
           padding: "45px",
 
-          width: "100%",
+          flex: 1,
+minWidth: 0,
 
           background: "#f8f6f1",
 
@@ -412,9 +459,11 @@ function Admin() {
           border:
             "1px solid rgba(255,255,255,0.7)",
 
-          height: "calc(123.0vh - 80px)",
+          minHeight: "100vh",
 
-          overflowY: "auto"
+overflow: "visible"
+
+         
         }}
       >
 
@@ -440,22 +489,38 @@ function Admin() {
 
         {/* ADD PRODUCT */}
         {activeTab === "addProduct" && (
-          <AddProductPanel
-            name={name}
-            setName={setName}
+         <AddProductPanel
 
-            price={price}
-            setPrice={setPrice}
+  name={name}
+  setName={setName}
 
-            category={category}
-            setCategory={setCategory}
+  price={price}
+  setPrice={setPrice}
 
-            setImage={setImage}
+  category={category}
+  setCategory={setCategory}
 
-            uploadImage={uploadImage}
+  story={story}
+  setStory={setStory}
 
-            addProduct={addProduct}
-          />
+  benefits={benefits}
+  setBenefits={setBenefits}
+
+  howToUse={howToUse}
+  setHowToUse={setHowToUse}
+
+  ingredients={ingredients}
+  setIngredients={setIngredients}
+
+  images={images}
+  setImages={setImages}
+
+  setImage={setImage}
+
+  uploadImage={uploadImage}
+
+  addProduct={addProduct}
+/>
         )}
 
         {/* ORDERS */}

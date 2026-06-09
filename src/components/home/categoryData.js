@@ -4,33 +4,28 @@ import tea from "../../assets/categories/tea.png";
 import nuts from "../../assets/categories/nuts.png";
 
 export const categories = [
-
   {
     id: 1,
     title: "Herbal Powders",
-    image:powders,
-   
+    image: powders,
+    iconKey: "leaf",
   },
-
   {
     id: 2,
     title: "Natural Seeds",
-    image:seeds,
-    
+    image: seeds,
+    iconKey: "sprout",
   },
-
   {
     id: 3,
     title: "Herbal Tea",
-   image:tea,
-   
+    image: tea,
+    iconKey: "coffee",
   },
-
   {
     id: 4,
     title: "Nuts & Dry Fruits",
-    image:nuts,
-    
-  }
-
+    image: nuts,
+    iconKey: "nut",
+  },
 ];

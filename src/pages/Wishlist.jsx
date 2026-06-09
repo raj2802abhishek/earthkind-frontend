@@ -24,7 +24,196 @@ const [showNoteBox, setShowNoteBox] = useState(null);
 const [scrollPosition, setScrollPosition] = useState(0);
 const carouselRef = useRef();
 
-  
+  const [selectedWeights, setSelectedWeights] =
+useState({});
+
+const productWeights = {
+
+  // HERBAL POWDERS
+  "Moringa Powder": ["100g", "200g"],
+  "Beetroot Powder": ["100g", "200g"],
+  "Amla Powder": ["100g", "200g"],
+  "Neem Powder": ["100g", "200g"],
+  "Multani Mitti": ["100g", "200g"],
+  "Orange Peel Powder": ["100g", "200g"],
+  "Rose Powder": ["100g", "200g"],
+  "Mix Face Pack": ["100g", "200g"],
+  "Detox Powder": ["100g", "200g"],
+
+  // SEEDS
+  "Chia Seeds": ["200g", "500g"],
+  "Pumpkin Seeds": ["200g", "500g"],
+  "Flax Seeds": ["200g", "500g"],
+  "Sunflower Seeds": ["200g", "500g"],
+  "Seed Mix": ["250g", "500g"],
+
+  // HERBAL TEA
+  "Chamomile Infusion": ["50g"],
+  "Rose Infusion": ["50g"],
+  "Moringa Hibiscus Blend": ["50g"],
+  "Tulsi Wellness Blend": ["50g"],
+  "Ginger Lemongrass Infusion": ["50g"],
+  "Kashmiri Kahwa": ["50g"],
+  "Orange Cinnamon Infusion": ["50g"],
+  "Masala Wellness Blend": ["50g"],
+
+  // NUTS & DRY FRUITS
+  "Premium California Almonds": ["250g", "500g"],
+  "Royal Whole Cashews": ["250g", "500g"],
+  "Premium Walnut Kernels": ["200g", "500g"],
+  "Sun-Dried Raisins": ["250g", "500g"],
+  "Black Pearl Raisins": ["250g", "500g"],
+  "Royal Medjool Dates": ["250g", "500g"],
+  "EarthKind Power Trail Mix": ["200g", "400g"],
+  "Super Seed Nut Fusion": ["200g", "400g"]
+
+};
+
+const productPrices = {
+
+  "Moringa Powder": {
+    "100g": 149,
+    "200g": 269
+  },
+
+  "Beetroot Powder": {
+    "100g": 129,
+    "200g": 239
+  },
+
+  "Amla Powder": {
+    "100g": 119,
+    "200g": 219
+  },
+
+  "Neem Powder": {
+    "100g": 99,
+    "200g": 189
+  },
+
+  "Multani Mitti": {
+    "100g": 79,
+    "200g": 149
+  },
+
+  "Orange Peel Powder": {
+    "100g": 129,
+    "200g": 239
+  },
+
+  "Rose Powder": {
+    "100g": 149,
+    "200g": 279
+  },
+
+  "Mix Face Pack": {
+    "100g": 169,
+    "200g": 319
+  },
+
+  "Detox Powder": {
+    "100g": 199,
+    "200g": 379
+  },
+
+  "Chia Seeds": {
+    "200g": 199,
+    "500g": 449
+  },
+
+  "Pumpkin Seeds": {
+    "200g": 249,
+    "500g": 599
+  },
+
+  "Flax Seeds": {
+    "200g": 129,
+    "500g": 299
+  },
+
+  "Sunflower Seeds": {
+    "200g": 169,
+    "500g": 399
+  },
+
+  "Seed Mix": {
+    "250g": 299,
+    "500g": 599
+  },
+
+  "Chamomile Infusion": {
+    "50g": 249
+  },
+
+  "Rose Infusion": {
+    "50g": 229
+  },
+
+  "Moringa Hibiscus Blend": {
+    "50g": 249
+  },
+
+  "Tulsi Wellness Blend": {
+    "50g": 199
+  },
+
+  "Ginger Lemongrass Infusion": {
+    "50g": 219
+  },
+
+  "Kashmiri Kahwa": {
+    "50g": 299
+  },
+
+  "Orange Cinnamon Infusion": {
+    "50g": 239
+  },
+
+  "Masala Wellness Blend": {
+    "50g": 229
+  },
+
+  "Premium California Almonds": {
+    "250g": 349,
+    "500g": 679
+  },
+
+  "Royal Whole Cashews": {
+    "250g": 389,
+    "500g": 749
+  },
+
+  "Sun-Dried Raisins": {
+    "250g": 179,
+    "500g": 329
+  },
+
+  "Black Pearl Raisins": {
+    "250g": 229,
+    "500g": 429
+  },
+
+  "Premium Walnut Kernels": {
+    "200g": 399,
+    "500g": 949
+  },
+
+  "EarthKind Power Trail Mix": {
+    "200g": 349,
+    "400g": 649
+  },
+
+  "Super Seed Nut Fusion": {
+    "200g": 379,
+    "400g": 699
+  },
+
+  "Royal Medjool Dates": {
+    "250g": 399,
+    "500g": 749
+  }
+
+};
 
  useEffect(() => {
   const storedWishlist =
@@ -164,17 +353,18 @@ const productImage =
 
   return (
     <div
-      style={{
-        padding: "10px",
-        maxWidth: "1000px",
-        margin: "0 auto"
-      }}
-    >
+  style={{
+    padding: "20px",
+    width: "100%",
+    maxWidth: "1760px",
+    margin: "0 auto",
+  }}
+>
     <div
   style={{
     textAlign: "center",
     marginTop: "5px",
-    marginBottom: "55px"
+    marginBottom: "50px"
   }}
 >
   <div
@@ -187,16 +377,13 @@ const productImage =
     }}
   >
     <h1
-      style={{
-        fontSize: "56px",
-        color: "#234d2c",
-        margin: 0,
-        fontFamily: "Georgia, serif",
-        fontWeight: "500",
-        letterSpacing: "-2px",
-        lineHeight: "1"
-      }}
-    >
+  style={{
+    fontSize: "56px",
+    color: "#234d2c",
+    margin: 0,
+    fontFamily: "Georgia, serif",
+  }}
+>
       Wishlist
     </h1>
 
@@ -330,6 +517,10 @@ const fullProduct =
     (p) => p._id === item._id
   ) || item;
 
+  const currentStock =
+  fullProduct.stock ?? item.stock ?? 0;
+
+  
   const productDescription =
 
 item.name === "Moringa Powder"
@@ -441,21 +632,35 @@ onMouseLeave={(e) => {
     "0 8px 25px rgba(0,0,0,0.05)";
 }}
     style={{
-      display: "flex",
-      gap: "25px",
-      background: "#fff",
-      borderRadius: "18px",
-      padding: "25px",
-      marginTop: "25px",
-      boxShadow: "0 8px 25px rgba(0,0,0,0.05)",
-      border: "1px solid #eee",
-      overflow: "visible",
-      position: "relative",
-zIndex:
-  showNoteBox === item._id
-    ? 999
-    : 1,
-    }}
+  display: "flex",
+  gap: "25px",
+
+  background: "rgba(255,255,255,0.75)",
+
+  backdropFilter: "blur(14px)",
+
+  border: "1px solid rgba(255,255,255,0.35)",
+
+  borderRadius: "24px",
+
+  padding: "28px",
+
+  marginTop: "30px",
+
+  boxShadow:
+    "0 12px 35px rgba(0,0,0,0.06)",
+
+  overflow: "visible",
+
+  position: "relative",
+
+  transition: "0.35s ease",
+
+  zIndex:
+    showNoteBox === item._id
+      ? 999
+      : 1
+}}
   >
 
     {/* IMAGE */}
@@ -472,18 +677,35 @@ zIndex:
     >
       <img
         src={item.image}
-        alt={item.name}
-        style={{
-          width: "140px",
-          height: "140px",
-          objectFit: "contain"
-        }}
+        
+        onMouseEnter={(e) => {
+  e.currentTarget.style.transform =
+    "scale(1.08)";
+}}
+
+onMouseLeave={(e) => {
+  e.currentTarget.style.transform =
+    "scale(1)";
+}}
+       style={{
+  width: "140px",
+  height: "140px",
+  objectFit: "contain",
+
+  transition: "0.35s ease",
+
+  cursor: "pointer"
+}}
       />
     </div>
 
-    {/* CONTENT */}
-    <div style={{ flex: 1 }}>
-
+   {/* CONTENT */}
+<div
+  style={{
+    flex: 1,
+    position: "relative"
+  }}
+>
       <h2
   onClick={() =>
     navigate("/product-details", {
@@ -492,6 +714,55 @@ zIndex:
   }
       >
         {item.name}
+        <div
+  style={{
+  position: "absolute",
+  top: "0",
+  right: "0",
+
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+
+  padding: "8px 16px",
+
+  borderRadius: "999px",
+
+  fontSize: "13px",
+
+  fontWeight: "700",
+
+  background:
+  currentStock === 0
+    ? "linear-gradient(135deg,#fff5f5,#ffe8e8)"
+    : currentStock <= 5
+      ? "linear-gradient(135deg,#fff8ec,#fff0d6)"
+      : "linear-gradient(135deg,#eefbf2,#dff6e8)",
+
+  border:
+    fullProduct.stock=== 0
+      ? "1px solid rgba(220,38,38,0.12)"
+      : currentStock <= 5
+      ? "1px solid rgba(234,88,12,0.12)"
+      : "1px solid rgba(22,101,52,0.10)",
+
+  boxShadow:
+    "0 4px 14px rgba(0,0,0,0.04)",
+
+  color:
+  currentStock === 0
+    ? "#dc2626"
+    : currentStock <= 5
+      ? "#ea580c"
+      : "#166534"
+}}
+>
+ {currentStock === 0
+  ? "◎ Restocking Soon"
+  : currentStock <= 5
+  ? "◈ Limited Batch"
+  : "✦ Freshly Available"}
+</div>
       </h2>
 
      <p
@@ -523,7 +794,42 @@ zIndex:
 >
   ★★★★★
 </div>
-        ₹{item.price}
+<div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    marginBottom: "12px"
+  }}
+>
+  <div
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      background:
+        "linear-gradient(135deg,#eef8ef,#dff0df)",
+      color: "#1f4d2e",
+      padding: "6px 14px",
+      borderRadius: "999px",
+      fontSize: "13px",
+      fontWeight: "700",
+      border:
+        "1px solid rgba(31,77,46,0.08)"
+    }}
+  >
+    {item.weight || "Default Weight"}
+  </div>
+
+  <span
+    style={{
+      color: "#1f4d2e",
+      fontSize: "32px",
+      fontWeight: "700"
+    }}
+  >
+    ₹{item.price}
+  </span>
+</div>
       </h3>
 
       {/* BUTTONS */}
@@ -536,8 +842,9 @@ zIndex:
       >
 
         {/* ADD TO CART */}
-        <button
-          onClick={(e) => addToCart(item,e)}
+       <button
+  disabled={currentStock === 0}
+  onClick={(e) => addToCart(item,e)}
           onMouseEnter={(e) => {
   e.currentTarget.style.transform =
     "translateY(-4px)";
@@ -551,10 +858,30 @@ onMouseLeave={(e) => {
   e.currentTarget.style.boxShadow =
     "0 8px 25px rgba(0,0,0,0.05)";
 }}
-          style={actionButton}
+        style={{
+  ...actionButton,
+
+  background:
+    currentStock === 0
+      ? "#d1d5db"
+      : "linear-gradient(90deg,#1f4d2e,#2e5f3e)",
+
+  cursor:
+    currentStock === 0
+      ? "not-allowed"
+      : "pointer",
+
+  opacity:
+    currentStock === 0
+      ? 0.7
+      : 1
+}}
         >
-          <FiShoppingCart />
-          Add to Cart
+         <FiShoppingCart />
+
+{currentStock === 0
+  ? "Out Of Stock"
+  : "Add to Cart"}
         </button>
 
         {/* NOTE */}
@@ -678,15 +1005,57 @@ onKeyDown={(e) => {
 
   <div style={{ marginTop: "70px" }}>
 
-  <h2
-    style={{
-      color: "#234d2c",
-      marginBottom: "25px",
-      fontSize: "32px"
-    }}
-  >
-    🌿 Customers also loved
-  </h2>
+  <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: "28px",
+    flexWrap: "wrap",
+    gap: "15px"
+  }}
+>
+  <div>
+    <div
+      style={{
+       
+        marginBottom: "6px"
+      }}
+    >
+      <p
+  className="section-subtitle"
+  style={{
+    marginBottom: "12px"
+  }}
+>
+  Community Favorites
+</p>
+      
+
+      <h2 className="section-title">
+  Customers Also Loved
+</h2>
+    </div>
+
+   <p
+  style={{
+    marginTop: "10px",
+
+    color: "#6b7280",
+
+    fontSize: "18px",
+
+    lineHeight: "1.8",
+
+    letterSpacing: "0.3px",
+
+    
+  }}
+>
+  Handpicked wellness favorites loved by our community
+</p>
+  </div>
+</div>
 
 <div
   style={{
@@ -719,75 +1088,419 @@ onKeyDown={(e) => {
       paddingBottom: "10px"
     }}
   >
-    {products.slice(0, 8).map((product) => (
+  {products.slice(0, 8).map((product) => (
 
-      <div
-      data-product-card
-  key={product._id}
-  onClick={() =>
-    navigate("/product-details", {
-      state: { product:product }
-    })
-  }
-        style={{
-          minWidth: "220px",
-          background: "#fff",
-          borderRadius: "18px",
-          padding: "20px",
-          boxShadow:
-            "0 5px 15px rgba(0,0,0,0.05)"
-        }}
-      >
-        <img
-          src={product.image}
-          alt={product.name}
-          style={{
-            width: "100%",
-            height: "180px",
-            objectFit: "contain"
-          }}
-        />
+  <div
+    data-product-card
+    key={product._id}
 
-        <h3
-          style={{
-            color: "#234d2c",
-            marginTop: "15px"
-          }}
-        >
-          {product.name}
-        </h3>
+    onClick={() =>
+      navigate("/product-details", {
+        state: {
+          product: {
+            ...product,
 
-        <p
-          style={{
-            color: "#666",
-            marginTop: "8px"
-          }}
-        >
-          ₹{product.price}
-        </p>
+            weight:
+              selectedWeights[product._id] ||
+              productWeights[product.name]?.[0],
 
-        <button
-  onClick={(e) => {
-    e.stopPropagation();
-    addToCart(product, e);
+            price:
+              productPrices[product.name]?.[
+                selectedWeights[product._id] ||
+                productWeights[product.name]?.[0]
+              ] || product.price
+          }
+        }
+      })
+    }
+
+    style={{
+      minWidth: "280px",
+      maxWidth: "280px",
+      border: "1px solid #ddd",
+      borderRadius: "18px",
+      padding: "20px",
+      background: "#fff",
+      textAlign: "center",
+      cursor: "pointer",
+      display: "flex",
+      flexDirection: "column",
+      boxShadow:
+        "0 5px 15px rgba(0,0,0,0.05)",
+      transition: "0.35s ease"
+    }}
+
+    onMouseEnter={(e) => {
+
+      e.currentTarget.style.transform =
+        "translateY(-5px)";
+
+      e.currentTarget.style.boxShadow =
+        "0 14px 28px rgba(0,0,0,0.08)";
+    }}
+
+    onMouseLeave={(e) => {
+
+      e.currentTarget.style.transform =
+        "translateY(0px)";
+
+      e.currentTarget.style.boxShadow =
+        "0 5px 15px rgba(0,0,0,0.05)";
+    }}
+  >
+
+    {/* IMAGE */}
+    <img
+      src={product.image}
+      alt={product.name}
+
+      style={{
+        width: "100%",
+        height: "250px",
+        objectFit: "contain",
+        backgroundColor: "#f9f9f9",
+        padding: "10px",
+        borderRadius: "12px",
+        marginBottom: "15px"
+      }}
+    />
+
+    {/* TOP BAR */}
+   <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "8px",
+    marginBottom: "18px",
+    minHeight: "36px"
   }}
-          style={{
-            marginTop: "15px",
-            width: "100%",
-            padding: "12px",
-            border: "none",
-            borderRadius: "10px",
-            background:
-              "linear-gradient(90deg,#1f4d2e,#2e5f3e)",
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: "600"
-          }}
-        >
-          Add to Cart
-        </button>
-      </div>
-    ))}
+>
+
+      {/* WEIGHT */}
+      <select
+      onClick={(e) => e.stopPropagation()}
+
+        value={
+          selectedWeights[product._id] ||
+
+          productWeights[product.name]?.[0] ||
+
+          ""
+        }
+
+        onChange={(e) => {
+
+          e.stopPropagation();
+
+          setSelectedWeights({
+            ...selectedWeights,
+
+            [product._id]:
+              e.target.value
+          });
+        }}
+
+       style={{
+  width: "78px",
+  minWidth: "78px",
+  height: "30px",
+
+  padding: "0 10px",
+
+  borderRadius: "10px",
+
+  border: "1px solid #d6e4d6",
+
+  background:
+    "linear-gradient(135deg,#f8fff8,#eef8ef)",
+
+  color: "#234d2c",
+
+  fontWeight: "800",
+
+  fontSize: "13px",
+
+  outline: "none",
+
+  cursor: "pointer",
+
+  boxShadow:
+    "0 4px 12px rgba(35,77,44,0.06)"
+}}
+      >
+
+        {(productWeights[
+          product.name
+        ] || ["100g"]).map(
+          (weight) => (
+
+            <option
+              key={weight}
+              value={weight}
+            >
+              {weight}
+            </option>
+
+          )
+        )}
+
+      </select>
+
+     <div
+ style={{
+  height: "30px",
+
+  minWidth: "128px",
+
+  display: "flex",
+
+  alignItems: "center",
+
+  justifyContent: "center",
+
+  padding: "0 14px",
+
+  borderRadius: "999px",
+
+  whiteSpace: "nowrap",
+
+  fontSize: "11px",
+
+  fontWeight: "700",
+
+  background:
+    product.stock === 0
+      ? "linear-gradient(135deg,#fff5f5,#ffe8e8)"
+      : product.stock <= 5
+      ? "linear-gradient(135deg,#fff8ec,#fff0d6)"
+      : "linear-gradient(135deg,#eefbf2,#dff6e8)",
+
+  border:
+    product.stock === 0
+      ? "1px solid rgba(220,38,38,0.12)"
+      : product.stock <= 5
+      ? "1px solid rgba(234,88,12,0.12)"
+      : "1px solid rgba(22,101,52,0.10)",
+
+  color:
+    product.stock === 0
+      ? "#dc2626"
+      : product.stock <= 5
+      ? "#ea580c"
+      : "#166534"
+}}
+>
+  {product.stock === 0
+    ? "◎ Restocking Soon"
+    : product.stock <= 5
+    ? "◈ Limited Batch"
+    : "✦ Freshly Available"}
+</div>
+    </div>
+
+    {/* PRODUCT NAME */}
+    <h3
+      style={{
+  color: "#234d2c",
+  marginTop: "0px",
+  minHeight: "56px",
+  lineHeight: "1.35",
+  fontSize: "20px",
+  fontWeight: "700",
+  textAlign: "center",
+justifyContent: "center",
+  display: "flex",
+  alignItems: "flex-start"
+}}
+    >
+      {product.name}
+    </h3>
+    
+
+    {/* PRICE */}
+    <p
+      style={{
+        fontSize: "25px",
+        fontWeight: "700",
+        color: "#66a473",
+        marginBottom: "8px",
+        textAlign: "center"
+      }}
+    >
+      ₹{
+
+        productPrices[
+          product.name
+        ]?.[
+
+          selectedWeights[
+            product._id
+          ] ||
+
+          productWeights[
+            product.name
+          ]?.[0]
+
+        ] ||
+
+        product.price
+
+      }
+    </p>
+
+    {/* CATEGORY */}
+    <p
+      style={{
+        color: "#666",
+        marginBottom: "18px",
+        fontSize: "15px",
+        textAlign: "center"
+      }}
+    >
+      {product.category}
+    </p>
+
+    {/* VIEW DETAILS */}
+    <button
+      onClick={(e) => {
+
+        e.stopPropagation();
+
+        navigate("/product-details", {
+          state: {
+            product: {
+              ...product,
+
+              weight:
+                selectedWeights[product._id] ||
+                productWeights[product.name]?.[0],
+
+              price:
+                productPrices[product.name]?.[
+                  selectedWeights[product._id] ||
+                  productWeights[product.name]?.[0]
+                ] || product.price
+            }
+          }
+        });
+      }}
+
+      style={{
+        width: "100%",
+        padding: "10px",
+        background: "#fff",
+        color: "#2d5a27",
+        border: "2px solid #2d5a27",
+        borderRadius: "8px",
+        cursor: "pointer",
+        marginBottom: "12px",
+        fontWeight: "bold",
+        transition: "all 0.35s ease"
+      }}
+    >
+      View Details
+    </button>
+
+    {/* ADD TO CART */}
+   <button
+  disabled={product.stock === 0}
+  onClick={(e) => {
+        e.stopPropagation();
+
+        addToCart(
+          {
+            ...product,
+
+            weight:
+              selectedWeights[
+                product._id
+              ] ||
+
+              productWeights[
+                product.name
+              ]?.[0],
+
+            price:
+              productPrices[
+                product.name
+              ]?.[
+                selectedWeights[
+                  product._id
+                ] ||
+
+                productWeights[
+                  product.name
+                ]?.[0]
+              ] ||
+
+              product.price
+          },
+
+          e
+        );
+      }}
+
+     style={{
+  marginTop: "auto",
+
+  background:
+    product.stock === 0
+      ? "#d1d5db"
+      : "#1f4d2e",
+
+  color: "#fff",
+
+  border:
+    product.stock === 0
+      ? "2px solid #d1d5db"
+      : "2px solid #1f4d2e",
+
+  padding: "12px 18px",
+
+  borderRadius: "10px",
+
+  cursor:
+    product.stock === 0
+      ? "not-allowed"
+      : "pointer",
+
+  opacity:
+    product.stock === 0
+      ? 0.75
+      : 1,
+
+  fontWeight: "600",
+
+  transition: "0.3s ease"
+}}
+
+      onMouseEnter={(e) => {
+
+        e.currentTarget.style.background =
+          "#fff";
+
+        e.currentTarget.style.color =
+          "#1f4d2e";
+      }}
+
+      onMouseLeave={(e) => {
+
+        e.currentTarget.style.background =
+          "#1f4d2e";
+
+        e.currentTarget.style.color =
+          "#fff";
+      }}
+    >
+     {product.stock === 0
+  ? "Out Of Stock"
+  : "Add to Cart"}
+    </button>
+
+  </div>
+))}
+    
   </div>
 </div>
     </div>

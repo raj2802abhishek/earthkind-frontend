@@ -121,25 +121,24 @@ function Cart() {
   return (
 
     <div
-      style={{
-        padding: "10px",
-        maxWidth: "1250px",
-        margin: "0 auto"
-      }}
-    >
+  style={{
+    padding: "20px",
+    width: "100%",
+    maxWidth: "1760px",
+    margin: "0 auto",
+  }}
+>
 
-      <h1
-        style={{
-          fontSize: "56px",
-          color: "#234d2c",
-          fontFamily: "Georgia, serif",
-          textAlign: "center",
-          marginTop:"20px",
-          marginBottom: "60px",
-          letterSpacing: "-2px",
-          fontWeight: "500",
-        }}
-      >
+     <h1
+  style={{
+    fontSize: "56px",
+    color: "#234d2c",
+    margin: 0,
+    fontFamily: "Georgia, serif",
+    textAlign: "center",
+    marginBottom: "50px",
+  }}
+>
        Your Cart <FiShoppingCart 
        style={{
     verticalAlign: "middle",
@@ -172,7 +171,7 @@ function Cart() {
 
     style={{
       padding: "18px",
-      marginBottom: "24px",
+      marginBottom: "30px",
       borderRadius: "24px",
       background:
         "linear-gradient(145deg,#ffffff,#f8faf8)",
@@ -641,7 +640,7 @@ gap: "12px"
                 "0 12px 35px rgba(0,0,0,0.06)",
 
               textAlign: "center",
-              maxWidth: "880px",
+              maxWidth: "980px",
               marginLeft: "auto",
               marginRight: "auto"
             }}

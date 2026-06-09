@@ -37,6 +37,7 @@ useState(
   JSON.parse(localStorage.getItem("wishlist")) || []
 );
 
+
 const productWeights = {
 
   // HERBAL POWDERS
@@ -238,7 +239,9 @@ const productPrices = {
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/products`
       );
+      
       setProducts(res.data);
+      console.log("PRODUCTS:", res.data);
     } catch (error) {
       console.log(error);
     }
@@ -256,9 +259,22 @@ const productPrices = {
     item.weight === product.weight
 );
   if (existingProductIndex !== -1) {
-    existingCart[existingProductIndex].quantity =
-      (existingCart[existingProductIndex].quantity || 1) + 1;
-  } else {
+
+  existingCart[existingProductIndex] = {
+    ...existingCart[existingProductIndex],
+
+    image:
+      product.image ||
+
+      product.images?.[0] ||
+
+      existingCart[existingProductIndex].image,
+
+    quantity:
+      (existingCart[existingProductIndex].quantity || 1) + 1
+  };
+
+} else {
    const selectedWeight =
 
   selectedWeights[
@@ -404,7 +420,33 @@ existingCart.push({
 
 } else {
 
-  updatedWishlist.push(product);
+  const selectedWeight =
+
+  selectedWeights[
+    product._id
+  ] ||
+
+  productWeights[
+    product.name
+  ]?.[0];
+
+const dynamicPrice =
+
+  productPrices[
+    product.name
+  ]?.[selectedWeight] ||
+
+  product.price;
+
+updatedWishlist.push({
+
+  ...product,
+
+  weight: selectedWeight,
+
+  price: dynamicPrice
+
+});
 
   toast.success("Added to wishlist", {
 
@@ -664,10 +706,22 @@ selectedCategory
   alt={product.name}
 
   onClick={() =>
-    navigate("/product-details", {
-      state: { product }
-    })
-  }
+  navigate("/product-details", {
+    state: {
+      product: {
+        ...product,
+        weight:
+          selectedWeights[product._id] ||
+          productWeights[product.name]?.[0],
+        price:
+          productPrices[product.name]?.[
+            selectedWeights[product._id] ||
+            productWeights[product.name]?.[0]
+          ] || product.price,
+      },
+    },
+  })
+}
 
   onMouseEnter={(e) => {
     e.currentTarget.style.transform =
@@ -799,6 +853,53 @@ selectedCategory
 
 </div>
           <h3>{product.name}</h3>
+        <div
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+
+    marginBottom: "14px",
+
+    padding: "7px 16px",
+
+    borderRadius: "999px",
+
+    fontSize: "12px",
+
+    fontWeight: "700",
+
+    background:
+      product.stock === 0
+        ? "linear-gradient(135deg,#fff5f5,#ffe8e8)"
+        : product.stock <= 5
+        ? "linear-gradient(135deg,#fff8ec,#fff0d6)"
+        : "linear-gradient(135deg,#eefbf2,#dff6e8)",
+
+    border:
+      product.stock === 0
+        ? "1px solid rgba(220,38,38,0.12)"
+        : product.stock <= 5
+        ? "1px solid rgba(234,88,12,0.12)"
+        : "1px solid rgba(22,101,52,0.10)",
+
+    boxShadow:
+      "0 4px 14px rgba(0,0,0,0.04)",
+
+    color:
+      product.stock === 0
+        ? "#dc2626"
+        : product.stock <= 5
+        ? "#ea580c"
+        : "#166534"
+  }}
+>
+  {product.stock === 0
+    ? "◎ Restocking Soon"
+    : product.stock <= 5
+    ? "◈ Limited Batch"
+    : "✦ Freshly Available"}
+</div>
           <p
   style={{
     fontSize: "25px",
@@ -831,10 +932,22 @@ selectedCategory
           
          <button
   onClick={() =>
-    navigate("/product-details", {
-      state: { product }
-    })
-  }
+  navigate("/product-details", {
+    state: {
+      product: {
+        ...product,
+        weight:
+          selectedWeights[product._id] ||
+          productWeights[product.name]?.[0],
+        price:
+          productPrices[product.name]?.[
+            selectedWeights[product._id] ||
+            productWeights[product.name]?.[0]
+          ] || product.price,
+      },
+    },
+  })
+}
 
   onMouseEnter={(e) => {
 
@@ -891,6 +1004,7 @@ selectedCategory
   
 
 <button
+  disabled={product.stock === 0}
   onClick={(e) =>
   addToCart(
     {
@@ -925,16 +1039,38 @@ selectedCategory
   )
 }
   style={{
-    marginTop: "10px",
-    background: "#1f4d2e",
-    color: "#fff",
-    border: "2px solid #1f4d2e",
-    padding: "12px 18px",
-    borderRadius: "10px",
-    cursor: "pointer",
-    fontWeight: "600",
-    transition: "0.3s ease"
-  }}
+  marginTop: "10px",
+
+  background:
+    product.stock === 0
+      ? "#d1d5db"
+      : "#1f4d2e",
+
+  color: "#fff",
+
+  border:
+    product.stock === 0
+      ? "2px solid #d1d5db"
+      : "2px solid #1f4d2e",
+
+  padding: "12px 18px",
+
+  borderRadius: "10px",
+
+  cursor:
+    product.stock === 0
+      ? "not-allowed"
+      : "pointer",
+
+  opacity:
+    product.stock === 0
+      ? 0.7
+      : 1,
+
+  fontWeight: "600",
+
+  transition: "0.3s ease"
+}}
   onMouseEnter={(e) => {
     e.target.style.background = "#fff";
     e.target.style.color = "#1f4d2e";
@@ -944,7 +1080,9 @@ selectedCategory
     e.target.style.color = "#fff";
   }}
 >
-  Add to Cart
+  {product.stock === 0
+  ? "Out Of Stock"
+  : "Add to Cart"}
 </button>
         </div>
       ))}
@@ -993,37 +1131,57 @@ selectedCategory
     }}
   ></div>
 
-  <h2
-    style={{
-      textAlign: "center",
-      fontSize: "52px",
-      color: "#123524",
-      marginBottom: "18px",
-      fontWeight: "800",
-      letterSpacing: "-1.5px",
-      position: "relative",
-      zIndex: 2
-    }}
-  >
-    Why Choose Earthkind Naturals 🌿
-  </h2>
+ <div
+  style={{
+    textAlign: "center",
+    marginBottom: "65px",
+    position: "relative",
+    zIndex: 2,
+
+    display: "flex",
+    flexDirection: "column",
+   alignItems: "flex-start"
+  }}
+>
+ <p
+  className="section-subtitle"
+  style={{
+    width: "220px",
+    textAlign: "left",
+    margin: "0"
+  }}
+>
+    Premium Wellness
+  </p>
+
+ <h2
+  className="section-title"
+  style={{
+    textAlign: "center",
+    width: "100%",
+    margin: "0 auto",
+
+    whiteSpace: "nowrap",
+    fontSize: "clamp(52px, 4vw, 80px)"
+  }}
+>
+  Why Choose Earthkind Naturals
+</h2>
 
   <p
-    style={{
-      textAlign: "center",
-      color: "#5f6f65",
-      marginBottom: "65px",
-      fontSize: "18px",
-      lineHeight: "1.9",
-      maxWidth: "760px",
-      marginInline: "auto",
-      position: "relative",
-      zIndex: 2
-    }}
-  >
+  className="section-text"
+  style={{
+    maxWidth: "760px",
+    textAlign: "center",
+    margin: "18px auto 0 auto"
+  }}
+>
     Premium wellness products crafted with purity,
     authenticity and nature’s finest ingredients.
   </p>
+</div>
+
+ 
 
   <div
     style={{
@@ -1185,29 +1343,49 @@ selectedCategory
   }}
 >
 
-  <h2
-    style={{
-      textAlign: "center",
-      fontSize: "52px",
-      color: "#123524",
-      marginBottom: "16px",
-      fontWeight: "800",
-      letterSpacing: "-1px"
-    }}
-  >
-    Customer Reviews 💚
-  </h2>
+ <div
+  style={{
+    textAlign: "center",
+    marginBottom: "60px",
+
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start"
+  }}
+>
+ <p
+  className="section-subtitle"
+  style={{
+    width: "220px",
+    textAlign: "left",
+    margin: "0"
+  }}
+>
+    Customer Love
+  </p>
+
+ <h2
+  className="section-title"
+  style={{
+    textAlign: "center",
+    width: "100%",
+    margin: "0 auto"
+  }}
+>
+  Customer Reviews 💚
+</h2>
 
   <p
-    style={{
-      textAlign: "center",
-      color: "#6b7280",
-      marginBottom: "60px",
-      fontSize: "18px"
-    }}
-  >
+  className="section-text"
+  style={{
+    maxWidth: "760px",
+    textAlign: "center",
+    margin: "18px auto 0 auto"
+  }}
+>
     Real stories from our wellness community.
   </p>
+</div>
 
   {/* LEFT BUTTON */}
   <button
@@ -1281,58 +1459,67 @@ selectedCategory
 
     {[
       {
-        name: "Priya Sharma",
-        review:
-          "Honestly didn’t expect the Moringa Powder to be this fresh. Packaging was neat and the quality genuinely felt premium."
-      },
+  name: "Priya Sharma",
+  rating: 5.0,
+  review:
+    "Honestly didn’t expect the Moringa Powder to be this fresh. Packaging was neat and the quality genuinely felt premium."
+},
 
-      {
-        name: "Rahul Verma",
-        review:
-          "Tried the Chia Seeds and they were super clean and crunchy. Definitely feels better than local store products."
-      },
+{
+  name: "Rahul Verma",
+  rating: 4.2,
+  review:
+    "Tried the Chia Seeds and they were super clean and crunchy. Definitely feels better than local store products."
+},
 
-      {
-        name: "Sneha Kapoor",
-        review:
-          "Delivery was surprisingly quick and the Herbal Tea smells amazing. My parents loved it too."
-      },
+{
+  name: "Sneha Kapoor",
+  rating: 4.8,
+  review:
+    "Delivery was surprisingly quick and the Herbal Tea smells amazing. My parents loved it too."
+},
 
-      {
-        name: "Aman Gupta",
-        review:
-          "I’ve ordered twice already. The products feel authentic and not overly commercial like many brands online."
-      },
+{
+  name: "Aman Gupta",
+  rating: 3.8,
+  review:
+    "I’ve ordered twice already. The products feel authentic and not overly commercial like many brands online."
+},
 
-      {
-        name: "Neha Joshi",
-        review:
-          "Really loved the eco-friendly packaging. Everything arrived safely and looked professionally packed."
-      },
+{
+  name: "Neha Joshi",
+  rating: 5.0,
+  review:
+    "Really loved the eco-friendly packaging. Everything arrived safely and looked professionally packed."
+},
 
-      {
-        name: "Karan Malhotra",
-        review:
-          "The Detox Powder mixes well and tastes natural. Can actually feel the freshness in the ingredients."
-      },
+{
+  name: "Karan Malhotra",
+  rating: 3.4,
+  review:
+    "The Detox Powder mixes well and tastes natural. Can actually feel the freshness in the ingredients."
+},
 
-      {
-        name: "Ritika Mehra",
-        review:
-          "Customer support was polite and responsive. Overall shopping experience felt smooth and trustworthy."
-      },
+{
+  name: "Ritika Mehra",
+  rating: 4.7,
+  review:
+    "Customer support was polite and responsive. Overall shopping experience felt smooth and trustworthy."
+},
 
-      {
-        name: "Vikas Arora",
-        review:
-          "The quality honestly exceeded my expectations. Will definitely try more wellness products from here."
-      },
+{
+  name: "Vikas Arora",
+  rating: 3.9,
+  review:
+    "The quality honestly exceeded my expectations. Will definitely try more wellness products from here."
+},
 
-      {
-        name: "Pooja Singh",
-        review:
-          "Loved the premium feel of the products. Even the unboxing experience looked elegant and clean."
-      }
+{
+  name: "Pooja Singh",
+  rating: 5.0,
+  review:
+    "Loved the premium feel of the products. Even the unboxing experience looked elegant and clean."
+}
 
     ].map((item, index) => (
 
@@ -1390,29 +1577,41 @@ selectedCategory
         {/* TOP CONTENT */}
         <div>
 
-          <div
-            style={{
-              color: "#f59e0b",
-              fontSize: "22px",
-              marginBottom: "24px",
-              textAlign: "center"
-            }}
-          >
-            ★★★★★
-          </div>
+  <div
+    style={{
+      color: "#f59e0b",
+      fontSize: "20px",
+      marginBottom: "20px",
+      textAlign: "center",
+      fontWeight: "700"
+    }}
+  >
+    {"★".repeat(Math.round(item.rating))}
+    {"☆".repeat(5 - Math.round(item.rating))}
 
-          <p
-            style={{
-              color: "#4b5563",
-              lineHeight: "1.9",
-              fontSize: "15px",
-              textAlign: "center"
-            }}
-          >
-            {item.review}
-          </p>
+    <span
+      style={{
+        marginLeft: "8px",
+        color: "#6b7280",
+        fontSize: "14px"
+      }}
+    >
+      {item.rating}
+    </span>
+  </div>
 
-        </div>
+  <p
+    style={{
+      color: "#4b5563",
+      lineHeight: "1.9",
+      fontSize: "15px",
+      textAlign: "center"
+    }}
+  >
+    {item.review}
+  </p>
+
+</div>
 
         {/* FIXED BOTTOM USER */}
         <div

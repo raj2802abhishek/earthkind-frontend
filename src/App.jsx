@@ -24,7 +24,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Wishlist from "./pages/Wishlist";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop";
-
+import AccountPanel from "./components/account/AccountPanel";
 
 
 
@@ -38,6 +38,9 @@ const [lastOrder, setLastOrder] = useState(null);
 const [showAuth, setShowAuth] = useState(false);
  
 const [showMenu, setShowMenu] = useState(false);
+const [navbarScrolled, setNavbarScrolled] = useState(false);
+const [mobileNav, setMobileNav] = useState(false);
+const navTextColor = navbarScrolled ? "#fff" : "#163923";
 const [user, setUser] = useState(
   JSON.parse(localStorage.getItem("user"))
 );
@@ -58,25 +61,69 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  if (!user) return;
 
-  const fetchLastOrder = async () => {
+  const fetchLatestOrder = async () => {
+
     try {
+
+      const currentUser =
+        JSON.parse(
+          localStorage.getItem("user")
+        );
+
+      if (!currentUser?.email) {
+
+        setLastOrder(null);
+
+        return;
+      }
+
       const res = await fetch(
-        `https://earthkind-backend.onrender.com/api/orders/my-orders/${user.email}`
+        `${import.meta.env.VITE_API_URL}/api/orders/my-orders/${currentUser.email}`
       );
 
       const data = await res.json();
 
-      if (data.length > 0) {
-        setLastOrder(data[0]); // latest order
-      }
+      setLastOrder(
+        data?.[0] || null
+      );
+
     } catch (err) {
+
       console.log(err);
+
     }
+
   };
 
-  fetchLastOrder();
+  // INITIAL FETCH
+  fetchLatestOrder();
+
+  // REALTIME ORDER UPDATE
+  const handleOrderPlaced = () => {
+
+  setTimeout(() => {
+
+    fetchLatestOrder();
+
+  }, 1200);
+
+};
+
+  window.addEventListener(
+    "orderPlaced",
+    handleOrderPlaced
+  );
+
+  return () => {
+
+    window.removeEventListener(
+      "orderPlaced",
+      handleOrderPlaced
+    );
+
+  };
+
 }, [user]);
 
 useEffect(() => {
@@ -140,6 +187,30 @@ useEffect(() => {
     window.removeEventListener("click", handleClickOutside);
   };
 }, []);
+useEffect(() => {
+
+  const handleScroll = () => {
+
+    if (window.scrollY > 40) {
+      setNavbarScrolled(true);
+    } else {
+      setNavbarScrolled(false);
+    }
+
+  };
+
+  window.addEventListener(
+    "scroll",
+    handleScroll
+  );
+
+  return () =>
+    window.removeEventListener(
+      "scroll",
+      handleScroll
+    );
+
+}, []);
 
   const dropdownAnimation = `
 @keyframes dropdownFade {
@@ -163,531 +234,437 @@ useEffect(() => {
 
     <style>{dropdownAnimation}</style>
 
-      <nav
-  style={{
-  background:
-    "linear-gradient(90deg, #1f4d2e, #0f2f1c, #1f4d2e)",
-  padding: "1px 40px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  borderRadius: "20px",
-  marginBottom: "30px",
-  boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-  position: "sticky",
-top: "0",
-zIndex: "1000",
-  
-}}
-  
-
-  
+    <nav
+  className={`earth-navbar ${
+    navbarScrolled ? "scrolled" : ""
+  }`}
 >
-<NavLink to="/">
-  <img
-    src={logo}
-    alt="Earthkind Naturals"
-    style={{
-      width: "160px",
-      objectFit: "contain",
-      filter: "brightness(0) invert(1)",
-      cursor: "pointer"
-    }}
-  />
-</NavLink>
 
+  <div
+  className="nav-inner"
+  style={{
+    minHeight: "72px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between"
+  }}
+>
+
+  {/* LOGO */}
+  <NavLink to="/">
+    <img
+      src={logo}
+      alt="Earthkind Naturals"
+      style={{
+        width:
+          window.innerWidth <= 768
+            ? "140px"
+            : "170px",
+
+        objectFit: "contain",
+
+        filter: navbarScrolled
+          ? "brightness(0) invert(1)"
+          : "brightness(0) saturate(100%) sepia(22%) hue-rotate(85deg)"
+      }}
+    />
+  </NavLink>
+
+  {/* NAV LINKS */}
+  <div
+    className={`nav-links ${
+      mobileNav ? "active" : ""
+    }`}
+  >
+
+    <NavLink
+      to="/"
+      className="nav-link"
+      style={{ color: navTextColor }}
+      onClick={() =>
+        setMobileNav(false)
+      }
+    >
+      Home
+    </NavLink>
+
+    <NavLink
+      to="/shop"
+      className="nav-link"
+      style={{ color: navTextColor }}
+      onClick={() =>
+        setMobileNav(false)
+      }
+    >
+      Shop
+    </NavLink>
+
+<div
+  className="nav-link"
+  style={{
+    color: navTextColor,
+    cursor: "pointer",
+  }}
+  onClick={() => {
+
+    setMobileNav(false);
+
+    if (window.location.pathname !== "/") {
+
+      navigate("/");
+
+      setTimeout(() => {
+
+        const section =
+          document.getElementById("categories");
+
+        if (section) {
+          section.scrollIntoView({
+            behavior: "smooth",
+          });
+        }
+
+      }, 300);
+
+    } else {
+
+      const section =
+        document.getElementById("categories");
+
+      if (section) {
+        section.scrollIntoView({
+          behavior: "smooth",
+        });
+      }
+
+    }
+
+  }}
+>
+  Categories
+</div>
+   <div
+  className="nav-link"
+  style={{
+    color: navTextColor,
+    cursor: "pointer",
+  }}
+  onClick={() => {
+
+    setMobileNav(false);
+
+    if (window.location.pathname !== "/") {
+
+      navigate("/");
+
+      setTimeout(() => {
+
+        const section =
+          document.getElementById("wellness");
+
+        if (section) {
+          section.scrollIntoView({
+            behavior: "smooth",
+          });
+        }
+
+      }, 300);
+
+    } else {
+
+      const section =
+        document.getElementById("wellness");
+
+      if (section) {
+        section.scrollIntoView({
+          behavior: "smooth",
+        });
+      }
+
+    }
+
+  }}
+>
+  Wellness
+</div>
+
+<div
+  className="nav-link"
+  style={{
+    color: navTextColor,
+    cursor: "pointer",
+  }}
+  onClick={() => {
+
+    setMobileNav(false);
+
+    if (window.location.pathname !== "/") {
+
+      navigate("/");
+
+      setTimeout(() => {
+
+        const section =
+          document.getElementById("about");
+
+        if (section) {
+          section.scrollIntoView({
+            behavior: "smooth",
+          });
+        }
+
+      }, 300);
+
+    } else {
+
+      const section =
+        document.getElementById("about");
+
+      if (section) {
+        section.scrollIntoView({
+          behavior: "smooth",
+        });
+      }
+
+    }
+
+  }}
+>
+  About
+</div>
+  </div>
+
+  {/* RIGHT SIDE */}
   <div
     style={{
       display: "flex",
-      gap: "30px",
-      alignItems: "center"
+      alignItems: "center",
+      gap:
+        window.innerWidth <= 768
+          ? "14px"
+          : "20px"
     }}
   >
-    <NavLink
-  to="/"
-  style={({ isActive }) => ({
-    color: "#fff",
-    textDecoration: isActive ? "underline" : "none",
-    textUnderlineOffset: "8px",
-    textDecorationThickness: "2px",
-    fontWeight: "600",
-    fontSize: "18px"
-  })}
->
-  Home
-</NavLink>
 
-    <NavLink
-  to="/shop"
-  style={({ isActive }) => ({
-    color: "#fff",
-    textDecoration: isActive ? "underline" : "none",
-    textUnderlineOffset: "8px",
-    textDecorationThickness: "2px",
-    fontWeight: "600",
-    fontSize: "18px"
-  })}
->
-  Shop
-</NavLink>
+    {/* WISHLIST */}
+    <div
+      style={{
+        position: "relative",
+        cursor: "pointer"
+      }}
+    >
+      <FiHeart
+        onClick={() =>
+          navigate("/wishlist")
+        }
+        style={{
+          fontSize:
+            window.innerWidth <= 768
+              ? "22px"
+              : "25px",
 
-  
+          color: navTextColor
+        }}
+      />
 
-    {user?.isAdmin && (
+      <span
+        style={{
+          position: "absolute",
 
-  <NavLink
-    to="/admin"
-    style={({ isActive }) => ({
+          top: "-8px",
+
+          right: "-10px",
+
+          background: "#d8ef7f",
+
+          color: "#163923",
+
+          borderRadius: "50%",
+
+          width: "20px",
+
+          height: "20px",
+
+          display: "flex",
+
+          justifyContent: "center",
+
+          alignItems: "center",
+
+          fontSize: "11px",
+
+          fontWeight: "700"
+        }}
+      >
+        {wishlistCount}
+      </span>
+    </div>
+
+    {/* CART */}
+    <div
+      style={{
+        position: "relative"
+      }}
+    >
+      <NavLink to="/cart">
+
+        <FiShoppingCart
+          className="cart-icon"
+          style={{
+            fontSize:
+              window.innerWidth <= 768
+                ? "24px"
+                : "27px",
+
+            color: navTextColor
+          }}
+        />
+
+      </NavLink>
+
+      <span
+        style={{
+          position: "absolute",
+
+          top: "-8px",
+
+          right: "-10px",
+
+          background: "#d8ef7f",
+
+          color: "#163923",
+
+          borderRadius: "50%",
+
+          width: "20px",
+
+          height: "20px",
+
+          display: "flex",
+
+          justifyContent: "center",
+
+          alignItems: "center",
+
+          fontSize: "11px",
+
+          fontWeight: "700"
+        }}
+      >
+        {cartCount}
+      </span>
+    </div>
+    {/* ADMIN BUTTON */}
+
+{user?.isAdmin && (
+
+  <button
+
+    onClick={() => navigate("/admin")}
+
+    style={{
+
+      padding:
+        window.innerWidth <= 768
+          ? "8px 12px"
+          : "10px 16px",
+
+      borderRadius: "12px",
+
+      border: "none",
+
+      background: "#163923",
+
       color: "#fff",
-      textDecoration: isActive
-        ? "underline"
-        : "none",
-
-      textUnderlineOffset: "8px",
-
-      textDecorationThickness: "2px",
 
       fontWeight: "600",
 
-      fontSize: "18px"
-    })}
+      fontSize:
+        window.innerWidth <= 768
+          ? "13px"
+          : "14px",
+
+      cursor: "pointer",
+
+      transition: "0.3s ease"
+
+    }}
+
   >
     Admin
-  </NavLink>
+  </button>
 
 )}
-  
 
-<div
-  style={{
-    position: "relative",
-    cursor: "pointer"
-  }}
->
-  <FiHeart
-    onClick={() => navigate("/wishlist")}
-    style={{
-      fontSize: "26px",
-      color: "#fff"
-    }}
-  />
-
-  <span
-    style={{
-      position: "absolute",
-      top: "-8px",
-      right: "-10px",
-      background: "#fff",
-      color: "#1f4d2e",
-      borderRadius: "50%",
-      width: "20px",
-      height: "20px",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      fontSize: "11px",
-      fontWeight: "700"
-    }}
-  >
-    {wishlistCount}
-  </span>
-</div>
-
-
-   <div
-  style={{
-    display: "flex",
-    gap: "20px",
-    alignItems: "center",
-    marginLeft: "10px"
-  }}
->
-  <div
-    style={{
-      position: "relative",
-      cursor: "pointer"
-    }}
-  >
-    <NavLink to="/cart">
-      <FiShoppingCart
-        className="cart-icon"
-        style={{
-          fontSize: "28px",
-          color: "#fff"
-        }}
-      />
-    </NavLink>
-
-    <span
-      style={{
-        position: "absolute",
-        top: "-8px",
-        right: "-10px",
-        background: "#fff",
-        color: "#1f4d2e",
-        borderRadius: "50%",
-        width: "22px",
-        height: "22px",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        fontSize: "12px",
-        fontWeight: "700",
-        transition: "all 0.3s ease",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.15)"
-      }}
-    >
-      {cartCount}
-    </span>
-  </div>
-</div>
-
-  
-    <div style={{ position: "relative" }}>
-  <FiUser
-  onClick={(e) => {
-    e.stopPropagation(); 
-    if (user) {
-      setShowMenu(!showMenu); // show dropdown
-    } else {
-      setShowAuth(true); // open login popup
-    }
-  }}
-  style={{
-    color: "#ffffff",
-    fontSize: "26px",
-    cursor: "pointer"
-  }}
-/>
-
- {showMenu && (
-  <div
-    onClick={(e) => e.stopPropagation()}
-    style={{
-      position: "absolute",
-      right: "0",
-      top: "58px",
-      width: "360px",
-      background: "rgba(255,255,255,0.82)",
-      backdropFilter: "blur(18px)",
-      WebkitBackdropFilter: "blur(18px)",
-      border: "1px solid rgba(255,255,255,0.35)",
-      borderRadius: "28px",
-      overflow: "hidden",
-      boxShadow:
-        "0 20px 60px rgba(0,0,0,0.18)",
-      zIndex: 1000,
-      animation: "dropdownFade 0.3s ease"
-    }}
-  >
-
-    {/* TOP PREMIUM HEADER */}
+    {/* USER */}
     <div
       style={{
-        padding: "26px",
-        background:
-          "linear-gradient(135deg,#163d26,#295c3b)",
         position: "relative"
       }}
     >
 
-      {/* GLOW */}
-      <div
+      <FiUser
+        onClick={(e) => {
+
+          e.stopPropagation();
+
+          if (user) {
+            setShowMenu(!showMenu);
+          } else {
+            setShowAuth(true);
+          }
+
+        }}
+
         style={{
-          position: "absolute",
-          width: "180px",
-          height: "180px",
-          background:
-            "rgba(255,255,255,0.08)",
-          borderRadius: "50%",
-          top: "-90px",
-          right: "-70px"
+          fontSize:
+            window.innerWidth <= 768
+              ? "24px"
+              : "26px",
+
+          color: navTextColor,
+
+          cursor: "pointer"
         }}
       />
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "16px",
-          position: "relative",
-          zIndex: 2
-        }}
-      >
-
-        {/* AVATAR */}
-        <div
-          style={{
-            width: "62px",
-            height: "62px",
-            borderRadius: "50%",
-            background:
-              "rgba(255,255,255,0.14)",
-            border:
-              "1px solid rgba(255,255,255,0.25)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            color: "#fff",
-            fontSize: "24px",
-            fontWeight: "700",
-            boxShadow:
-              "0 8px 25px rgba(0,0,0,0.18)"
-          }}
-        >
-          {user?.name
-            ? user.name.charAt(0).toUpperCase()
-            : "U"}
-        </div>
-
-        {/* USER INFO */}
-        <div>
-          {user ? (
-            <>
-              <h3
-                style={{
-                  margin: 0,
-                  color: "#fff",
-                  fontSize: "22px",
-                  fontWeight: "600",
-                  letterSpacing: "0.3px"
-                }}
-              >
-                Hello, {user.name}
-              </h3>
-
-              <p
-                style={{
-                  margin: "5px 0 0 0",
-                  color: "rgba(255,255,255,0.75)",
-                  fontSize: "14px",
-                  fontWeight: "400"
-                }}
-              >
-                Welcome back to your account
-              </p>
-            </>
-          ) : (
-            <>
-              <h3
-                style={{
-                  margin: 0,
-                  color: "#fff"
-                }}
-              >
-                Welcome
-              </h3>
-
-              <p
-                style={{
-                  margin: "4px 0 0 0",
-                  color:
-                    "rgba(255,255,255,0.7)",
-                  fontSize: "13px"
-                }}
-              >
-                Sign in to continue
-              </p>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-
-    {/* SIGN IN BUTTON */}
-    {!user && (
-      <div style={{ padding: "20px" }}>
-        <button
-          onClick={() => {
-            setShowAuth(true);
-            setShowMenu(false);
-          }}
-          style={{
-            width: "100%",
-            padding: "15px",
-            border: "none",
-            borderRadius: "14px",
-            background:
-              "linear-gradient(90deg,#1f4d2e,#2e6b44)",
-            color: "#fff",
-            fontSize: "15px",
-            fontWeight: "600",
-            cursor: "pointer",
-            boxShadow:
-              "0 10px 25px rgba(31,77,46,0.2)",
-            transition: "0.3s"
-          }}
-        >
-          Sign In
-        </button>
-      </div>
-    )}
-
-    {/* BODY */}
-    <div
-      style={{
-        padding: "24px"
-      }}
-    >
-
-      {/* SECTION TITLE */}
-      <p
-        style={{
-          fontSize: "12px",
-          fontWeight: "700",
-          letterSpacing: "1.5px",
-          color: "#8b8b8b",
-          marginBottom: "18px",
-          textTransform: "uppercase"
-        }}
-      >
-        Your Account
-      </p>
-
-      {/* MENU ITEMS */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px"
-        }}
-      >
-
-        {/* ORDERS */}
-        <div
-          onClick={() => navigate("/my-orders")}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background =
-              "#f4f8f5";
-
-            e.currentTarget.style.transform =
-              "translateX(4px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background =
-              "transparent";
-
-            e.currentTarget.style.transform =
-              "translateX(0)";
-          }}
-          style={premiumItem}
-        >
-          Your Orders
-        </div>
-
-        {/* SETTINGS */}
-        <div
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background =
-              "#f4f8f5";
-
-            e.currentTarget.style.transform =
-              "translateX(4px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background =
-              "transparent";
-
-            e.currentTarget.style.transform =
-              "translateX(0)";
-          }}
-          style={premiumItem}
-        >
-          Account Settings
-        </div>
-
-        {/* ADDRESS */}
-        <div
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background =
-              "#f4f8f5";
-
-            e.currentTarget.style.transform =
-              "translateX(4px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background =
-              "transparent";
-
-            e.currentTarget.style.transform =
-              "translateX(0)";
-          }}
-          style={premiumItem}
-        >
-          Addresses
-        </div>
-
-        {/* EXPLORE */}
-        <div
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background =
-              "#f4f8f5";
-
-            e.currentTarget.style.transform =
-              "translateX(4px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background =
-              "transparent";
-
-            e.currentTarget.style.transform =
-              "translateX(0)";
-          }}
-          style={premiumItem}
-        >
-          Explore Products
-        </div>
-
-      </div>
-
-      {/* LOGOUT */}
-      {user && (
-        <button
-          onClick={() => {
-            localStorage.removeItem("user");
-            localStorage.removeItem("token");
-
-            window.dispatchEvent(
-              new Event("userChanged")
-            );
-
-            setShowMenu(false);
-          }}
-          style={{
-            width: "100%",
-            marginTop: "24px",
-            padding: "15px",
-            border: "none",
-            borderRadius: "14px",
-            background:
-              "linear-gradient(90deg,#fff0f0,#ffe6e6)",
-            color: "#c0392b",
-            fontWeight: "600",
-            cursor: "pointer",
-            fontSize: "15px",
-            transition: "0.3s"
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform =
-              "translateY(-2px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform =
-              "translateY(0)";
-          }}
-        >
-          Logout
-        </button>
-      )}
-    </div>
-  </div>
+      {showMenu && (
+  <AccountPanel
+    user={user}
+    lastOrder={lastOrder}
+    setShowMenu={setShowMenu}
+  />
 )}
-</div>
+
+     
+
+    </div>
+
+    {/* MOBILE MENU BUTTON */}
+    <div
+      className="mobile-menu-btn"
+
+      onClick={() =>
+        setMobileNav(!mobileNav)
+      }
+    >
+      <span />
+      <span />
+      <span />
+    </div>
+
+  </div>
 
 </div>
 
- 
-</nav>
+</nav>  
+<div
+  style={{
+    height:
+      window.innerWidth <= 768
+        ? "82px"
+        : "150px"
+  }}
+/>
 <div style={{ height: "12px" }} />
 
       <Routes>
@@ -722,74 +699,307 @@ zIndex: "1000",
 </Routes>
 
   
-   <footer
-  style={{
-    marginTop: "40px",
-    background:
-      "linear-gradient(90deg, #4eae6e, #74a588, #4eae6e)",
-    color: "#fff",
-    padding: "15px 30px",
-    borderRadius: "18px",
-    textAlign: "center"
-  }}
->
-  <img
-    src={logo}
-    alt="Earthkind Naturals"
-    style={{
-      width: "180px",
-      height: "auto",
-      objectFit: "contain",
-      marginBottom: "0px",
-      filter: "brightness(0) invert(1)"
-    }}
-  />
+   <footer className="earth-footer">
 
+  <div className="container">
+
+    <div className="footer-grid">
+
+      {/* BRAND */}
+      <div>
+
+        <img
+          src={logo}
+          alt="Earthkind Naturals"
+
+          style={{
+            width: "190px",
+
+            marginBottom: "26px",
+
+            filter:
+              "brightness(0) invert(1)"
+          }}
+        />
+
+        <p className="footer-text">
+          Premium herbal wellness
+          products crafted with
+          nature-inspired ingredients
+          designed for healthy,
+          mindful modern living.
+        </p>
+
+      </div>
+
+     {/* LINKS */}
+<div>
+
+  <h3 className="footer-title">
+    Quick Links
+  </h3>
+
+  {/* HOME */}
   <div
-    style={{
-      width: "220px",
-      height: "1px",
-      background: "rgba(255,255,255,0.3)",
-      margin: "20px auto 30px auto"
-    }}
-  />
+    className="footer-link"
+    style={{ cursor: "pointer" }}
+    onClick={() => {
 
-  <p style={{ fontSize: "20px", marginBottom: "30px" }}>
-    Premium Herbal Products for Natural Wellness
-  </p>
+  navigate("/");
 
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+
+}}
+  >
+    Home
+  </div>
+
+  {/* SHOP */}
   <div
-  style={{
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "35px",
-    flexWrap: "wrap",
-    marginBottom: "30px",
-    fontSize: "18px"
-  }}
->
-  <p style={{ margin: 0 }}>
-    Instagram: @earthkind_naturals
-  </p>
+    className="footer-link"
+    style={{ cursor: "pointer" }}
+    onClick={() => navigate("/shop")}
+  >
+    Shop
+  </div>
 
-  <p style={{ margin: 0 }}>
-    Email: support@earthkindnaturals.com
-  </p>
+  {/* CATEGORIES */}
+  <div
+    className="footer-link"
+    style={{ cursor: "pointer" }}
+    onClick={() => {
 
-  <p style={{ margin: 0 }}>
-    WhatsApp: +91 9027186252
-  </p>
-</div>
+      if (window.location.pathname !== "/") {
 
-  <p
-    style={{
-      fontSize: "15px",
-      opacity: 0.9
+        navigate("/");
+
+        setTimeout(() => {
+
+          const section =
+            document.getElementById("categories");
+
+          if (section) {
+            section.scrollIntoView({
+              behavior: "smooth",
+            });
+          }
+
+        }, 300);
+
+      } else {
+
+        const section =
+          document.getElementById("categories");
+
+        if (section) {
+          section.scrollIntoView({
+            behavior: "smooth",
+          });
+        }
+
+      }
+
     }}
   >
-    © 2026 EARTHKIND NATURALS. All Rights Reserved.
+    Categories
+  </div>
+
+  {/* ABOUT */}
+  <div
+    className="footer-link"
+    style={{ cursor: "pointer" }}
+    onClick={() => {
+
+      if (window.location.pathname !== "/") {
+
+        navigate("/");
+
+        setTimeout(() => {
+
+          const section =
+            document.getElementById("about");
+
+          if (section) {
+            section.scrollIntoView({
+              behavior: "smooth",
+            });
+          }
+
+        }, 300);
+
+      } else {
+
+        const section =
+          document.getElementById("about");
+
+        if (section) {
+          section.scrollIntoView({
+            behavior: "smooth",
+          });
+        }
+
+      }
+
+    }}
+  >
+    About
+  </div>
+
+</div>
+     {/* CONTACT */}
+<div>
+
+  <h3 className="footer-title">
+    Contact
+  </h3>
+
+  {/* EMAIL */}
+  <a
+    href="mailto:support@earthkindnaturals.com"
+    className="footer-text"
+    style={{
+      display: "block",
+      textDecoration: "none",
+      color: "#fff",
+      transition: "0.3s ease",
+    }}
+  >
+    support@earthkindnaturals.com
+  </a>
+
+  {/* PHONE */}
+  <a
+    href="tel:+919027186252"
+    className="footer-text"
+    style={{
+      display: "block",
+      marginTop: "12px",
+      textDecoration: "none",
+      color: "#fff",
+      transition: "0.3s ease",
+    }}
+  >
+    +91 9027186252
+  </a>
+
+  {/* INSTAGRAM */}
+  <a
+    href="https://instagram.com/earthkind_naturals"
+    target="_blank"
+    rel="noreferrer"
+    className="footer-text"
+    style={{
+      display: "block",
+      marginTop: "12px",
+      textDecoration: "none",
+      color: "#fff",
+      transition: "0.3s ease",
+    }}
+  >
+    Instagram: @earthkind_naturals
+  </a>
+
+</div>
+{/* WELLNESS */}
+<div>
+
+  <h3 className="footer-title">
+    Wellness
+  </h3>
+
+  {/* HERBAL POWDERS */}
+  <p
+    className="footer-text"
+    onClick={() =>
+      navigate("/shop", {
+        state: {
+          selectedCategory: "Herbal Powders"
+        }
+      })
+    }
+
+    style={{
+      cursor: "pointer"
+    }}
+  >
+    Pure Herbal Powders
   </p>
+
+  {/* SEEDS */}
+  <p
+    className="footer-text"
+
+    onClick={() =>
+      navigate("/shop", {
+        state: {
+          selectedCategory: "Natural Seeds"
+        }
+      })
+    }
+
+    style={{
+      marginTop: "12px",
+      cursor: "pointer"
+    }}
+  >
+    Premium Seeds
+  </p>
+
+  {/* DRY FRUITS */}
+  <p
+    className="footer-text"
+
+    onClick={() =>
+      navigate("/shop", {
+        state: {
+          selectedCategory: "Nuts & Dry Fruits"
+        }
+      })
+    }
+
+    style={{
+      marginTop: "12px",
+      cursor: "pointer"
+    }}
+  >
+    Luxury Dry Fruits
+  </p>
+
+  {/* HERBAL TEA */}
+  <p
+    className="footer-text"
+
+    onClick={() =>
+      navigate("/shop", {
+        state: {
+          selectedCategory: "Herbal Tea"
+        }
+      })
+    }
+
+    style={{
+      marginTop: "12px",
+      cursor: "pointer"
+    }}
+  >
+    Wellness Blends
+  </p>
+
+</div>
+    </div>
+
+    <div className="footer-bottom">
+
+      © 2026 EARTHKIND NATURALS —
+      Crafted With Nature 🌿
+
+    </div>
+
+  </div>
+
 </footer>
 <ToastContainer position="top-right" autoClose={2000} />
 

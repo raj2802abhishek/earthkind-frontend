@@ -48,45 +48,42 @@ function AdminSidebar({
 
    <div
   style={{
-    width: "270px",
+  width: "280px",
+  minWidth: "280px",
+  flexShrink: 0,
+  position: "sticky",
+top: "20px",
 
-    height: "calc(123.0vh - 80px)",
-    
+  height: "100%",
+  alignSelf: "stretch",
 
-    background:
-  "linear-gradient(180deg, #081120 0%, #17263a 52%, #1d4b3b 100%)",
+  background:
+    "linear-gradient(180deg, #081120 0%, #17263a 52%, #1d4b3b 100%)",
 
-    color: "#ffffff",
+  color: "#ffffff",
 
-    padding: "32px 18px",
+  padding: "28px 18px",
 
-   position: "sticky",
+  borderRadius: "32px",
 
-   top: "1px",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "space-between",
 
-    borderRadius: "32px",
+  boxShadow:
+    "0 24px 60px rgba(2,6,23,0.28), inset 0 1px 0 rgba(255,255,255,0.05)",
 
-    display: "flex",
+  border: "1px solid rgba(255,255,255,0.06)",
 
-    flexDirection: "column",
+  backdropFilter: "blur(14px)",
+  WebkitBackdropFilter: "blur(14px)",
 
-    justifyContent: "space-between",
+  zIndex: 1,
 
-    boxShadow:
-  "0 24px 60px rgba(2,6,23,0.28), inset 0 1px 0 rgba(255,255,255,0.05)",
+  overflow: "visible",
 
-   border: "1px solid rgba(255,255,255,0.06)",
-
-    backdropFilter: "blur(14px)",
-
-    WebkitBackdropFilter: "blur(14px)",
-
-    zIndex: 1,
-
-    overflow: "hidden",
-
-    transition: "all 0.3s ease"
-  }}
+  transition: "all 0.3s ease"
+}}
 >
 
       {/* TOP SECTION */}
@@ -202,6 +199,8 @@ e.currentTarget.style.transform =
 
                     e.currentTarget.style.background =
                       "transparent";
+                      e.currentTarget.style.transform =
+  "translateX(0px)";
 
                   }
 

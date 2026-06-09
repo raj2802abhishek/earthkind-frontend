@@ -1,152 +1,200 @@
 import { motion } from "framer-motion";
+import { Coffee, Leaf, Nut, Sprout } from "lucide-react";
 
-function CategoryCard({
-  category,
-  active,
-  onClick
-}) {
+const iconMap = {
+  leaf: Leaf,
+  sprout: Sprout,
+  coffee: Coffee,
+  nut: Nut,
+};
+
+function CategoryCard({ category, active, onClick }) {
+  const Icon = iconMap[category.iconKey] || Leaf;
+
+
   return (
     <motion.div
-    layout
+      layout
+      initial={{
+        opacity: 0,
+        y: 40,
+      }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+      }}
+      viewport={{
+        once: true,
+      }}
       whileHover={{
         y: -10,
-        scale:1.025
       }}
-
-      whileTap={{
-        scale: 0.98
+      transition={{
+        duration: 0.5,
       }}
-
       onClick={onClick}
-
       style={{
-  position: "relative",
-   transition:"0.35s ease",
-  height:
-  window.innerWidth <= 768
-    ? "185px"
-    : "340px",
-
-  width: "100%",
-
-  borderRadius: "28px",
-
-  overflow: "hidden",
-
-  cursor: "pointer",
-
-  background: "transparent",
-
-  display: "flex",
-
-  boxShadow: active
-  ? "0 25px 50px rgba(31,77,46,0.22)"
-  : "0 12px 28px rgba(0,0,0,0.06)"
-}}
-    >
-
-      {/* IMAGE */}
-      <motion.div
-      whileHover={{
-    scale: 1.04
-  }}
-        style={{
-          position: "absolute",
-
-          inset: 0,
-
-          backgroundImage: `url(${category.image})`,
-
-          backgroundSize: "cover",
-
-          backgroundPosition: "center",
-
-          backgroundRepeat: "no-repeat",
-          filter: "brightness(1.02) saturate(1.05)",
-
-          zIndex: 2
-        }}
-      />
-
-     
-
-      {active && (
-
-  <>
-  
-    {/* PARTICLES */}
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        zIndex: 6,
-        pointerEvents: "none"
+        cursor: "pointer",
+        display: "flex",
+        flexDirection: "column",
+        gap: "18px",
       }}
     >
-
-      {[...Array(8)].map((_, i) => (
-
-        <div
-          key={i}
-
+      {/* IMAGE CARD */}
+      <div
+        style={{
+          position: "relative",
+          height:
+  window.innerWidth <= 768
+    ? "280px"
+    : "600px",
+          borderRadius:
+  window.innerWidth <= 768
+    ? "18px"
+    : "28px",
+          overflow: "hidden",
+          background: "#f4f0e8",
+          boxShadow: active
+            ? "0 18px 40px rgba(23,59,43,0.12)"
+            : "0 14px 32px rgba(0,0,0,0.06)",
+        }}
+      >
+        <motion.img
+          whileHover={{
+            scale: 1.04,
+          }}
+          transition={{
+            duration: 0.8,
+          }}
+          src={category.image}
+          alt={category.title}
           style={{
-            position: "absolute",
-
-            width: "14px",
-            height: "14px",
-
-            borderRadius: "50%",
-
-            background:
-  "rgba(216,239,127,0.9)",
-
-            left: "50%",
-            top: "50%",
-
-            animation:
-              "particleBurst 1.1s ease-out forwards",
-
-            animationDelay:
-              `${i * 0.05}s`,
-
-            transform:
-              `rotate(${i * 45}deg)
-               translateY(-20px)`
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
           }}
         />
 
-      ))}
+        {/* FLOATING PREMIUM ICON */}
+        <div
+          style={{
+            position: "absolute",
+          left:
+  window.innerWidth <= 768
+    ? "12px"
+    : "22px",
 
-    </div>
+bottom:
+  window.innerWidth <= 768
+    ? "12px"
+    : "22px",
+            
+           width:
+  window.innerWidth <= 768
+    ? "38px"
+    : "54px",
 
-    {/* PREMIUM GLOW */}
-    <motion.div
+height:
+  window.innerWidth <= 768
+    ? "38px"
+    : "54px",
+            borderRadius: "50%",
+            background: "rgba(248,246,239,0.96)",
+            border: "1px solid rgba(23,59,43,0.08)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 10px 24px rgba(0,0,0,0.08)",
+          }}
+        >
+          <Icon
+  size={
+    window.innerWidth <= 768
+      ? 18
+      : 26
+  } strokeWidth={1.6} color="#234d2c" />
+        </div>
+      </div>
 
-      initial={{
-        opacity: 0
-      }}
+    {/* TITLE ROW */}
+<div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap:
+  window.innerWidth <= 768
+    ? "8px"
+    : "16px",
+    padding: "0 6px",
+    marginTop: "-2px",
+  }}
+>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize:
+  window.innerWidth <= 768
+    ? "22px"
+    : "34px",
+              lineHeight: "1",
+              color: "#163923",
+              margin: 0,
+              whiteSpace: "pre-line",
+            }}
+          >
+            {category.title}
+          </h3>
 
-      animate={{
-        opacity: 1
-      }}
+          <div
+            style={{
+              width:
+  window.innerWidth <= 768
+    ? "40px"
+    : "72px",
+              height: "1px",
+              background: "rgba(22,57,35,0.16)",
+              marginTop: "10px",
+            }}
+          />
+        </div>
 
-      style={{
-        position: "absolute",
+        <motion.button
+          type="button"
+          whileHover={{
+            x: 6,
+          }}
+          aria-label={`Explore ${category.title}`}
+          style={{
+         width:
+  window.innerWidth <= 768
+    ? "34px"
+    : "44px",
 
-        inset: 0,
-
-        background:
-          "radial-gradient(circle at top right, rgba(255,255,255,0.18), transparent 60%)",
-
-        zIndex: 3
-      }}
-    />
-
-  </>
-
-)}
-      
-
+height:
+  window.innerWidth <= 768
+    ? "34px"
+    : "44px",
+            borderRadius: "50%",
+            border: "1px solid rgba(22,57,35,0.08)",
+            background: "#fff",
+            color: "#163923",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize:
+  window.innerWidth <= 768
+    ? "14px"
+    : "20px",
+            flexShrink: 0,
+            boxShadow: "0 8px 20px rgba(0,0,0,0.05)",
+            cursor: "pointer",
+          }}
+        >
+          →
+        </motion.button>
+      </div>
     </motion.div>
   );
 }

@@ -20,6 +20,21 @@ function AddProductPanel({
   category,
   setCategory,
 
+  story,
+  setStory,
+
+  benefits,
+  setBenefits,
+
+  howToUse,
+  setHowToUse,
+
+  ingredients,
+  setIngredients,
+
+  images,
+  setImages,
+
   setImage,
 
   uploadImage,
@@ -27,6 +42,32 @@ function AddProductPanel({
   addProduct
 
 }) {
+  const updateArrayField = (
+  setter,
+  index,
+  value,
+  currentArray
+) => {
+
+  const updated = [...currentArray];
+
+  updated[index] = value;
+
+  setter(updated);
+
+};
+
+const addArrayField = (
+  setter,
+  currentArray
+) => {
+
+  setter([
+    ...currentArray,
+    ""
+  ]);
+
+};
 
   return (
 
@@ -260,6 +301,264 @@ function AddProductPanel({
             </select>
 
           </div>
+          {/* PRODUCT STORY */}
+<div
+  style={{
+    gridColumn: "span 3"
+  }}
+>
+
+  <label style={labelStyle}>
+    Product Story
+  </label>
+
+  <textarea
+
+    placeholder="Write premium storytelling for the product..."
+
+    value={story}
+
+    onChange={(e) =>
+      setStory(e.target.value)
+    }
+
+    style={{
+      ...inputStyle,
+
+      minHeight: "180px",
+
+      padding: "20px",
+
+      resize: "vertical"
+    }}
+  />
+
+</div>
+
+{/* BENEFITS */}
+<div
+  style={{
+    gridColumn: "span 3"
+  }}
+>
+
+  <div
+    style={{
+      display: "flex",
+
+      justifyContent:
+        "space-between",
+
+      alignItems: "center",
+
+      marginBottom: "16px"
+    }}
+  >
+
+    <label style={labelStyle}>
+      Product Benefits
+    </label>
+
+    <button
+
+      type="button"
+
+      onClick={() =>
+        addArrayField(
+          setBenefits,
+          benefits
+        )
+      }
+
+      className="earth-btn"
+    >
+      Add Benefit
+    </button>
+
+  </div>
+
+  {benefits.map(
+    (benefit, index) => (
+
+    <input
+
+      key={index}
+
+      type="text"
+
+      placeholder={`Benefit ${index + 1}`}
+
+      value={benefit}
+
+      onChange={(e) =>
+        updateArrayField(
+          setBenefits,
+          index,
+          e.target.value,
+          benefits
+        )
+      }
+
+      style={{
+        ...inputStyle,
+
+        marginBottom: "14px"
+      }}
+    />
+
+  ))}
+
+</div>
+
+{/* HOW TO USE */}
+<div
+  style={{
+    gridColumn: "span 3"
+  }}
+>
+
+  <div
+    style={{
+      display: "flex",
+
+      justifyContent:
+        "space-between",
+
+      alignItems: "center",
+
+      marginBottom: "16px"
+    }}
+  >
+
+    <label style={labelStyle}>
+      How To Use
+    </label>
+
+    <button
+
+      type="button"
+
+      onClick={() =>
+        addArrayField(
+          setHowToUse,
+          howToUse
+        )
+      }
+
+      className="earth-btn"
+    >
+      Add Step
+    </button>
+
+  </div>
+
+  {howToUse.map(
+    (step, index) => (
+
+    <input
+
+      key={index}
+
+      type="text"
+
+      placeholder={`Step ${index + 1}`}
+
+      value={step}
+
+      onChange={(e) =>
+        updateArrayField(
+          setHowToUse,
+          index,
+          e.target.value,
+          howToUse
+        )
+      }
+
+      style={{
+        ...inputStyle,
+
+        marginBottom: "14px"
+      }}
+    />
+
+  ))}
+
+</div>
+
+{/* INGREDIENTS */}
+<div
+  style={{
+    gridColumn: "span 3"
+  }}
+>
+
+  <div
+    style={{
+      display: "flex",
+
+      justifyContent:
+        "space-between",
+
+      alignItems: "center",
+
+      marginBottom: "16px"
+    }}
+  >
+
+    <label style={labelStyle}>
+      Ingredients
+    </label>
+
+    <button
+
+      type="button"
+
+      onClick={() =>
+        addArrayField(
+          setIngredients,
+          ingredients
+        )
+      }
+
+      className="earth-btn"
+    >
+      Add Ingredient
+    </button>
+
+  </div>
+
+  {ingredients.map(
+    (ingredient, index) => (
+
+    <input
+
+      key={index}
+
+      type="text"
+
+      placeholder={`Ingredient ${index + 1}`}
+
+      value={ingredient}
+
+      onChange={(e) =>
+        updateArrayField(
+          setIngredients,
+          index,
+          e.target.value,
+          ingredients
+        )
+      }
+
+      style={{
+        ...inputStyle,
+
+        marginBottom: "14px"
+      }}
+    />
+
+  ))}
+
+</div>
 
           {/* IMAGE UPLOAD */}
           <div

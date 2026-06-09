@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  useNavigate,
+  useLocation
+} from "react-router-dom";
 import axios from "axios";
 import { FiCreditCard } from "react-icons/fi";
 import {
@@ -10,6 +13,7 @@ import {
 import "react-toastify/dist/ReactToastify.css";
 function Checkout() {
 const navigate = useNavigate();
+const location = useLocation();
   const [showInstructionModal, setShowInstructionModal] =
   useState(false);
 
@@ -26,6 +30,7 @@ const [sundayDelivery, setSundayDelivery] =
     const [promoCode, setPromoCode] = useState("");
 const [discount, setDiscount] = useState(0);
 const [availableCoupons, setAvailableCoupons] = useState([]);
+const [userCoupons, setUserCoupons] = useState([]);
 const [message, setMessage] = useState("");
 const [cartItems, setCartItems] = useState([]);
 const [totalAmount, setTotalAmount] = useState(0);
@@ -35,13 +40,16 @@ const gstAmount =
 const deliveryCharge =
   totalAmount >= 499 ? 0 : 50;
 
-const finalAmount =
+const finalAmount = Math.max(
   totalAmount +
   gstAmount +
   deliveryCharge -
-  discount;
+  discount,
+  0
+);
 const user = JSON.parse(localStorage.getItem("user"));
 const validateCheckout = () => {
+  console.log(selectedAddress);
   if (!selectedAddress) {
     alert("Please select or add a delivery address 📍");
     return false;
@@ -62,6 +70,7 @@ const validateCheckout = () => {
 
 
 const handlePlaceOrder = async () => {
+  console.log("HANDLE PLACE ORDER STARTED");
   if (!validateCheckout()) return;
 
   const orderData = {
@@ -74,11 +83,14 @@ const handlePlaceOrder = async () => {
 
   address: `${selectedAddress.address}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.pincode}`,
 
-  products: cartItems.map((item) => ({
-    name: item.name,
-    price: item.price,
-    quantity: item.quantity || 1
-  })),
+products: cartItems.map((item) => ({
+  _id: item._id,
+  name: item.name,
+  price: item.price,
+  quantity: item.quantity,
+  image: item.image || item.images?.[0] || "",
+  weight: item.weight || ""
+})),
 
   totalAmount,
 
@@ -105,35 +117,40 @@ const handlePlaceOrder = async () => {
 };
 
   try {
+if (paymentMethod === "COD") {
 
-  if (paymentMethod === "COD") {
+  /* INSTANT UI RESPONSE */
+  localStorage.removeItem("cart");
 
-    /* INSTANT UI RESPONSE */
-    localStorage.removeItem("cart");
+  navigate("/order-success");
 
-    navigate("/order-success");
+  /* SAVE ORDER IN BACKGROUND */
+  axios.post(
+    `${import.meta.env.VITE_API_URL}/api/orders/create`,
+    orderData
+  )
+  .then(() => {
 
-    /* SAVE ORDER IN BACKGROUND */
-    axios.post(
-      `${import.meta.env.VITE_API_URL}/api/orders/create`,
-      orderData
-    )
-    .then(() => {
+    /* REFRESH RECENT ORDER */
+    window.dispatchEvent(
+      new Event("orderPlaced")
+    );
 
-      toast.success(
-        "Order placed with Cash on Delivery 🎉"
-      );
+    toast.success(
+      "Order placed with Cash on Delivery 🎉"
+    );
 
-    })
-    .catch((error) => {
+  })
+  .catch((error) => {
 
-      console.log(error);
+    console.log(error);
 
-      toast.error("Order sync failed ❌");
+    toast.error("Order sync failed ❌");
 
-    });
+  });
 
-  } else {
+}
+  else {
 
     // simulate payment
     const confirmPay =
@@ -150,6 +167,9 @@ const handlePlaceOrder = async () => {
 
     /* INSTANT NAVIGATION */
     localStorage.removeItem("cart");
+    window.dispatchEvent(
+  new Event("orderPlaced")
+);
 
     navigate("/order-success");
 
@@ -202,10 +222,13 @@ const saveOrderToDB = async () => {
     customerName: selectedAddress.fullName,
     phone: selectedAddress.phone,
     address: `${selectedAddress.address}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.pincode}`,
-  products: cartItems.map((item) => ({
+products: cartItems.map((item) => ({
+  _id: item._id,
   name: item.name,
   price: item.price,
-  quantity: item.quantity || 1
+  quantity: item.quantity,
+  image: item.image || item.images?.[0] || "",
+  weight: item.weight || ""
 })),
     totalAmount,
     discount,
@@ -215,9 +238,13 @@ const saveOrderToDB = async () => {
   deliveryCharge -
   discount,
     paymentMethod,
-    status: paymentMethod === "COD" ? "Pending" : "Paid"
+    status:
+  paymentMethod === "COD"
+    ? "Pending"
+    : "Confirmed"
   };
 
+  console.log(orderData.products);
   try {
     await axios.post(
       `${import.meta.env.VITE_API_URL}/api/orders/create`,
@@ -227,6 +254,9 @@ const saveOrderToDB = async () => {
     toast.success("Order placed successfully 🎉");
 
     localStorage.removeItem("cart");
+    window.dispatchEvent(
+  new Event("orderPlaced")
+);
     window.location.href = "/order-success";
 
   } catch (error) {
@@ -285,6 +315,38 @@ const handleRazorpayPayment = async () => {
   }
 };
 
+const applyCouponDirect = (
+  coupon
+) => {
+
+  setPromoCode(
+    coupon.code
+  );
+
+  if (
+    coupon.type ===
+    "percentage"
+  ) {
+
+    setDiscount(
+      (totalAmount *
+        coupon.discount) / 100
+    );
+
+  } else {
+
+    setDiscount(
+      coupon.discount
+    );
+
+  }
+
+  setMessage(
+    `Coupon Applied: ${coupon.code}`
+  );
+
+};
+
 const applyPromoCode = () => {
   const matchedCoupon = availableCoupons.find(
     (coupon) =>
@@ -328,7 +390,9 @@ const [city, setCity] = useState("");
 const [state, setState] = useState("");
 const [pincode, setPincode] = useState("");
 const [showAddressSelector, setShowAddressSelector] =
-  useState(false);
+  useState(
+    location.state?.openAddresses || false
+  );
   const [editingAddress, setEditingAddress] = useState(null);
 const saveAddress = () => {
   if (
@@ -479,9 +543,12 @@ const getCurrentLocation = () => {
     () => toast.error("Location permission denied ❌")
   );
 };
-
 useEffect(() => {
+
   fetchCoupons();
+
+  fetchUserCoupons();
+
 }, []);
 
 const fetchCoupons = async () => {
@@ -494,6 +561,38 @@ const fetchCoupons = async () => {
   } catch (error) {
     console.log(error);
   }
+};
+
+const fetchUserCoupons = async () => {
+
+  try {
+
+    const user =
+      JSON.parse(
+        localStorage.getItem("user")
+      );
+
+    if (!user?.email) return;
+
+    const res =
+      await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/coupons/user/${user.email}`
+      );
+
+    setUserCoupons(
+      res.data.filter(
+        coupon =>
+          !coupon.used &&
+          coupon.isActive
+      )
+    );
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+
 };
 useEffect(() => {
   const savedCart =
@@ -511,26 +610,23 @@ useEffect(() => {
 }, []);
   return (
     <div
-      style={{
-       maxWidth: "1000px",
-      width: "100%",
-        margin: "0 auto",
-        padding: "40px 20px"
-      }}
-    >
-      <h1
-        style={{
-        fontSize: "56px",
-        color: "#234d2c",
-        margin: 0,
-        fontFamily: "Georgia, serif",
-        fontWeight: "500",
-        letterSpacing: "-2px",
-        lineHeight: "1",
-        marginTop:"-25px",
-        marginBottom:"50px"
-      }}
-      >
+  style={{
+    width: "100%",
+    maxWidth: "1760px",
+    margin: "0 auto",
+    padding: "20px",
+  }}
+>
+<h1
+  style={{
+    fontSize: "56px",
+    color: "#234d2c",
+    margin: 0,
+    fontFamily: "Georgia, serif",
+    textAlign: "center",
+    marginBottom: "50px",
+  }}
+>
         Checkout{" "}
 <FiCreditCard
   style={{
@@ -613,36 +709,61 @@ useEffect(() => {
 
       <div style={{ flex: 1 }}>
 
-        <h2
-  style={{
-    color: "#123524",
-    fontSize: "26px",
-    marginBottom: "14px",
-    textAlign: "left",
-    width: "100%"
-  }}
->
-          Delivering to {selectedAddress?.fullName}
-        </h2>
+       {selectedAddress ? (
+  <>
+    <h2
+      style={{
+        color: "#123524",
+        fontSize: "26px",
+        marginBottom: "14px",
+        textAlign: "left",
+        width: "100%"
+      }}
+    >
+      Delivering to {selectedAddress.fullName}
+    </h2>
 
-        <p
-          style={{
-            color: "#4b5563",
-            lineHeight: "1.8",
-            fontSize: "18px"
-          }}
-        >
-          {selectedAddress?.address},
-          {" "}
-          {selectedAddress?.city},
-          {" "}
-          {selectedAddress?.state}
-          {" "}
-          -
-          {" "}
-          {selectedAddress?.pincode}
-        </p>
+    <p
+      style={{
+        color: "#4b5563",
+        lineHeight: "1.8",
+        fontSize: "18px"
+      }}
+    >
+      {selectedAddress.address},
+      {" "}
+      {selectedAddress.city},
+      {" "}
+      {selectedAddress.state}
+      {" "}
+      -
+      {" "}
+      {selectedAddress.pincode}
+    </p>
+  </>
+) : (
+  <>
+    <h2
+      style={{
+        color: "#123524",
+        fontSize: "26px",
+        marginBottom: "12px"
+      }}
+    >
+      📍 No Delivery Address Added
+    </h2>
 
+    <p
+      style={{
+        color: "#6b7280",
+        fontSize: "17px",
+        lineHeight: "1.8"
+      }}
+    >
+      Please add your delivery address to continue checkout and enjoy a seamless shopping experience.
+    </p>
+  </>
+)}
        <button
   type="button"
   onClick={() =>
@@ -1171,6 +1292,76 @@ onMouseLeave={(e) => {
 <p style={{ marginTop: "15px", color: "#234d2c" }}>
   {message}
 </p>
+{userCoupons.length > 0 && (
+
+<div
+  style={{
+    marginTop: "20px"
+  }}
+>
+
+  <h3
+    style={{
+      color: "#123524",
+      marginBottom: "12px"
+    }}
+  >
+    Your Available Coupons
+  </h3>
+
+  <div
+    style={{
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "10px"
+    }}
+  >
+
+    {userCoupons.map((coupon) => (
+
+      <button
+        key={coupon._id}
+
+        onClick={() => {
+
+          setPromoCode(
+            coupon.code
+          );
+
+          applyCouponDirect(
+            coupon
+          );
+
+        }}
+
+        style={{
+          border: "none",
+
+          padding: "10px 14px",
+
+          borderRadius: "12px",
+
+          background:
+            "#123524",
+
+          color: "#fff",
+
+          cursor: "pointer",
+
+          fontWeight: "600"
+        }}
+      >
+        ₹{coupon.discount}
+        OFF
+      </button>
+
+    ))}
+
+  </div>
+
+</div>
+
+)}
 <div
   style={{
     marginTop: "24px",
@@ -1431,7 +1622,13 @@ onMouseLeave={(e) => {
 </div>
 
       {/* Place Order */}
-<div style={{ textAlign: "center" }}>
+<div
+  style={{
+    textAlign: "center",
+    marginTop: "10px",
+    marginBottom: "30px",
+  }}
+>
   <button
   type="button"
     onClick={() => {
