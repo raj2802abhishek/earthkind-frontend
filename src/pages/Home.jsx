@@ -446,9 +446,9 @@ gap: isDesktop ? "84px" : "52px",
           transition={{ duration: 0.8 }}
           style={{
             width: "100%",
-            height: "990px",
+            height: isDesktop ? "990px" : "440px",
             objectFit: "cover",
-            borderRadius: "42px",
+            borderRadius: isDesktop ? "42px" : "28px",
             boxShadow: "0 35px 80px rgba(0,0,0,0.12)",
           }}
         />
@@ -459,9 +459,9 @@ gap: isDesktop ? "84px" : "52px",
           transition={{ duration: 0.8, delay: 0.2 }}
           style={{
             position: "absolute",
-           left: "48px",
-top: "355px",
-width: "390px",
+           left: isDesktop ? "48px" : "16px",
+top: isDesktop ? "355px" : "32px",
+width: isDesktop ? "390px" : "calc(100% - 32px)",
             zIndex: 5,
           }}
         >
@@ -470,7 +470,7 @@ width: "390px",
               position: "relative",
               overflow: "hidden",
               borderRadius: "38px",
-              padding: "30px 30px",
+              padding: isDesktop ? "30px 30px" : "24px 20px",
               background: "rgba(255,255,255,0.16)",
               backdropFilter: "blur(18px)",
               WebkitBackdropFilter: "blur(18px)",
@@ -496,7 +496,7 @@ width: "390px",
                   letterSpacing: "4px",
                   fontSize: "11px",
                   fontWeight: 700,
-                  marginBottom: "28px",
+                  marginBottom: isDesktop ? "28px" : "18px",
                 }}
               >
                 Crafted For Modern Living
@@ -507,7 +507,7 @@ width: "390px",
                   display: "flex",
                   alignItems: "center",
                   gap: "14px",
-                  marginBottom: "22px",
+                  marginBottom: isDesktop ? "22px" : "14px",
                 }}
               >
                 <div
@@ -538,10 +538,10 @@ width: "390px",
               <h3
                 style={{
                   fontFamily: "'Cormorant Garamond', serif",
-                  fontSize: "58px",
+                  fontSize: isDesktop ? "58px" : "40px",
                   lineHeight: "0.88",
                   color: "#163923",
-                  marginBottom: "28px",
+                  marginBottom: isDesktop ? "28px" : "20px",
                   letterSpacing: "-2px",
                 }}
               >
@@ -557,7 +557,7 @@ width: "390px",
                   width: "100%",
                   height: "1px",
                   background: "rgba(35,77,44,0.14)",
-                  marginBottom: "28px",
+                  marginBottom: isDesktop ? "28px" : "18px",
                 }}
               />
 
@@ -566,7 +566,7 @@ width: "390px",
                   color: "rgba(22,57,35,0.86)",
                   lineHeight: "1.8",
                   fontSize: "15px",
-                  marginBottom: "26px",
+                  marginBottom: isDesktop ? "26px" : "18px",
                 }}
               >
                 Premium wellness presentation crafted with refined herbal
@@ -578,7 +578,7 @@ width: "390px",
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(3, 1fr)",
-                  gap: "10px",
+                  gap: isDesktop ? "10px" : "6px",
                 }}
               >
                 {[
@@ -606,8 +606,8 @@ width: "390px",
                   >
                     <div
                       style={{
-                        fontSize: "24px",
-                        marginBottom: "10px",
+                        fontSize: isDesktop ? "24px" : "20px",
+                        marginBottom: isDesktop ? "10px" : "6px",
                       }}
                     >
                       {item.icon}
@@ -616,9 +616,9 @@ width: "390px",
                     <h4
                       style={{
                         color: "#163923",
-                        fontSize: "28px",
+                        fontSize: isDesktop ? "28px" : "22px",
                         fontWeight: 700,
-                        marginBottom: "6px",
+                        marginBottom: "4px",
                       }}
                     >
                       {item.number}
