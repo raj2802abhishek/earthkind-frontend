@@ -123,10 +123,11 @@ function Cart() {
     <div
       className="cart-page-container"
       style={{
-        padding: "20px",
+        padding: "30px 40px 80px 40px",
         width: "100%",
-        maxWidth: "1760px",
+        maxWidth: "1200px",
         margin: "0 auto",
+        boxSizing: "border-box"
       }}
     >
       <h1

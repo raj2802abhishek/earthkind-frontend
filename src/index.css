@@ -2319,10 +2319,11 @@ body,
 }
 
 /* ==========================================================================
-   DESKTOP RESPONSIVE CONTAINER MARGINS (WISHLIST & CHECKOUT > 1024px)
+   DESKTOP RESPONSIVE CONTAINER MARGINS (WISHLIST, CART & CHECKOUT > 1024px)
    ========================================================================== */
 @media (min-width: 1025px) {
-  .wishlist-page-container {
+  .wishlist-page-container,
+  .cart-page-container {
     width: 100% !important;
     max-width: 1200px !important;
     margin: 0 auto !important;
