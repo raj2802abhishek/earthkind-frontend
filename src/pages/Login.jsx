@@ -10,7 +10,10 @@ import {
   ShieldCheck,
   ArrowRight,
   UserCheck,
-  LogIn
+  LogIn,
+  Phone,
+  Smartphone,
+  KeyRound
 } from "lucide-react";
 
 function FeatureItem({ icon, title, text }) {
@@ -47,9 +50,14 @@ function Login({ defaultMode = "login" }) {
   // Determine mode from route path or prop
   const isRegisterRoute = location.pathname === "/register" || defaultMode === "register";
   const [mode, setMode] = useState(isRegisterRoute ? "register" : "login");
+  const [authMethod, setAuthMethod] = useState("phone"); // 'phone' | 'email'
 
   // Form States
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [timer, setTimer] = useState(0);
   const [email, setEmail] = useState(() => localStorage.getItem("rememberedEmail") || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -58,7 +66,73 @@ function Login({ defaultMode = "login" }) {
 
   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-  // Handle Login & Auto-Register
+  // Handle Phone OTP Send
+  const handleSendPhoneOTP = async (e) => {
+    if (e) e.preventDefault();
+    if (mode === "register" && !name.trim()) {
+      toast.error("Please enter your full name ⚠️");
+      return;
+    }
+    if (!phone.trim()) {
+      toast.error("Please enter your mobile number ⚠️");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await axios.post(`${API_BASE}/api/users/send-phone-otp`, {
+        phone: phone.trim(),
+        name: mode === "register" ? name.trim() : undefined
+      });
+      toast.success("OTP sent to " + phone + " 📲");
+      setOtpSent(true);
+      setTimer(30);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to send OTP ❌");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Phone OTP Verify
+  const handleVerifyPhoneOTP = async (e) => {
+    if (e) e.preventDefault();
+    if (!otp.trim()) {
+      toast.error("Please enter the OTP ⚠️");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await axios.post(`${API_BASE}/api/users/verify-phone-otp`, {
+        phone: phone.trim(),
+        otp: otp.trim(),
+        name: mode === "register" ? name.trim() : undefined
+      });
+
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      window.dispatchEvent(new Event("userChanged"));
+
+      const msg = mode === "register"
+        ? "Registered & Logged in successfully! Welcome to Earthkind 🎉"
+        : "Login successful! Welcome back 🎉";
+
+      toast.success(res.data.message || msg);
+
+      if (res.data.user?.isAdmin) {
+        navigate("/admin");
+      } else {
+        navigate("/account");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Invalid OTP ❌");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Email Login & Register
   const handleAuth = async (e) => {
     if (e) e.preventDefault();
 
@@ -308,6 +382,53 @@ function Login({ defaultMode = "login" }) {
             </button>
           </div>
 
+          {/* AUTH METHOD SELECTOR */}
+          <div style={{ display: "flex", gap: "10px", marginBottom: "22px" }}>
+            <button
+              type="button"
+              onClick={() => { setAuthMethod("phone"); setOtpSent(false); }}
+              style={{
+                flex: 1,
+                padding: "10px 14px",
+                borderRadius: "14px",
+                border: authMethod === "phone" ? "2px solid #163923" : "1px solid #e0e0e0",
+                background: authMethod === "phone" ? "rgba(22, 57, 35, 0.08)" : "#ffffff",
+                color: "#163923",
+                fontWeight: "700",
+                fontSize: "13px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px"
+              }}
+            >
+              <Smartphone size={15} /> Phone & OTP
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setAuthMethod("email")}
+              style={{
+                flex: 1,
+                padding: "10px 14px",
+                borderRadius: "14px",
+                border: authMethod === "email" ? "2px solid #163923" : "1px solid #e0e0e0",
+                background: authMethod === "email" ? "rgba(22, 57, 35, 0.08)" : "#ffffff",
+                color: "#163923",
+                fontWeight: "700",
+                fontSize: "13px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px"
+              }}
+            >
+              <Mail size={15} /> Email Address
+            </button>
+          </div>
+
           {/* CARD HEADER */}
           <div style={{ marginBottom: "28px" }}>
             <p
@@ -326,18 +447,66 @@ function Login({ defaultMode = "login" }) {
             <h2
               style={{
                 margin: 0,
-                fontSize: window.innerWidth <= 900 ? "36px" : "44px",
+                fontSize: window.innerWidth <= 900 ? "32px" : "40px",
                 color: "#163923",
                 fontFamily: "Georgia, serif"
               }}
             >
-              {mode === "register" ? "Create Account" : "Log In"}
+              {mode === "register"
+                ? authMethod === "phone" ? "Register with Phone" : "Create Account"
+                : authMethod === "phone" ? "Log In with Phone" : "Log In"}
             </h2>
           </div>
 
-          <form onSubmit={handleAuth}>
-            {/* FULL NAME (Only in Register mode) */}
-            {mode === "register" && (
+          {authMethod === "phone" ? (
+            <form onSubmit={otpSent ? handleVerifyPhoneOTP : handleSendPhoneOTP}>
+              {/* FULL NAME (Only in Register mode) */}
+              {mode === "register" && (
+                <div style={{ marginBottom: "18px" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                      color: "#163923",
+                      fontWeight: "600",
+                      fontSize: "14px"
+                    }}
+                  >
+                    Full Name
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <User
+                      size={18}
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "18px",
+                        transform: "translateY(-50%)",
+                        color: "#567"
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Enter full name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required={mode === "register"}
+                      style={{
+                        width: "100%",
+                        padding: "16px 16px 16px 52px",
+                        borderRadius: "18px",
+                        border: "1px solid rgba(0,0,0,0.08)",
+                        background: "rgba(255,255,255,0.9)",
+                        fontSize: "15px",
+                        outline: "none",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* PHONE NUMBER */}
               <div style={{ marginBottom: "18px" }}>
                 <label
                   style={{
@@ -348,10 +517,10 @@ function Login({ defaultMode = "login" }) {
                     fontSize: "14px"
                   }}
                 >
-                  Full Name
+                  Mobile Number
                 </label>
                 <div style={{ position: "relative" }}>
-                  <User
+                  <Phone
                     size={18}
                     style={{
                       position: "absolute",
@@ -362,11 +531,12 @@ function Login({ defaultMode = "login" }) {
                     }}
                   />
                   <input
-                    type="text"
-                    placeholder="Enter full name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required={mode === "register"}
+                    type="tel"
+                    placeholder="+91 Enter Mobile Number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                    disabled={otpSent}
                     style={{
                       width: "100%",
                       padding: "16px 16px 16px 52px",
@@ -380,99 +550,150 @@ function Login({ defaultMode = "login" }) {
                   />
                 </div>
               </div>
-            )}
 
-            {/* EMAIL */}
-            <div style={{ marginBottom: "18px" }}>
-              <label
+              {/* OTP INPUT (if OTP sent) */}
+              {otpSent && (
+                <div style={{ marginBottom: "18px" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                      color: "#163923",
+                      fontWeight: "600",
+                      fontSize: "14px"
+                    }}
+                  >
+                    Enter 6-Digit OTP
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <KeyRound
+                      size={18}
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "18px",
+                        transform: "translateY(-50%)",
+                        color: "#567"
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Enter OTP"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      required
+                      style={{
+                        width: "100%",
+                        padding: "16px 16px 16px 52px",
+                        borderRadius: "18px",
+                        border: "1px solid rgba(0,0,0,0.08)",
+                        background: "rgba(255,255,255,0.9)",
+                        fontSize: "15px",
+                        outline: "none",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px", fontSize: "13px" }}>
+                    <span style={{ color: "#666" }}>
+                      {timer > 0 ? `Resend in ${timer}s` : ""}
+                    </span>
+                    <span
+                      style={{ color: "#163923", fontWeight: "700", cursor: "pointer" }}
+                      onClick={handleSendPhoneOTP}
+                    >
+                      Resend OTP
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* SUBMIT BUTTON */}
+              <button
+                type="submit"
+                disabled={loading}
                 style={{
-                  display: "block",
-                  marginBottom: "8px",
-                  color: "#163923",
-                  fontWeight: "600",
-                  fontSize: "14px"
+                  width: "100%",
+                  padding: "18px",
+                  border: "none",
+                  borderRadius: "20px",
+                  background: "linear-gradient(135deg,#163923,#285b37)",
+                  color: "#fff",
+                  fontWeight: "700",
+                  fontSize: "16px",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  opacity: loading ? 0.7 : 1,
+                  boxShadow: "0 14px 30px rgba(22,57,35,0.2)",
+                  transition: "0.3s ease"
                 }}
               >
-                Email Address
-              </label>
-              <div style={{ position: "relative" }}>
-                <Mail
-                  size={18}
+                <div
                   style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "18px",
-                    transform: "translateY(-50%)",
-                    color: "#567"
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "10px"
                   }}
-                />
-                <input
-                  type="email"
-                  placeholder="Enter email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  style={{
-                    width: "100%",
-                    padding: "16px 16px 16px 52px",
-                    borderRadius: "18px",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    background: "rgba(255,255,255,0.9)",
-                    fontSize: "15px",
-                    outline: "none",
-                    boxSizing: "border-box"
-                  }}
-                />
-              </div>
-            </div>
+                >
+                  {loading
+                    ? "Processing..."
+                    : !otpSent
+                    ? mode === "register" ? "Send Registration OTP" : "Send Login OTP"
+                    : mode === "register" ? "Verify OTP & Complete Registration" : "Verify OTP & Sign In"}
+                  <ArrowRight size={18} />
+                </div>
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleAuth}>
+              {/* FULL NAME (Only in Register mode) */}
+              {mode === "register" && (
+                <div style={{ marginBottom: "18px" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                      color: "#163923",
+                      fontWeight: "600",
+                      fontSize: "14px"
+                    }}
+                  >
+                    Full Name
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <User
+                      size={18}
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "18px",
+                        transform: "translateY(-50%)",
+                        color: "#567"
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Enter full name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required={mode === "register"}
+                      style={{
+                        width: "100%",
+                        padding: "16px 16px 16px 52px",
+                        borderRadius: "18px",
+                        border: "1px solid rgba(0,0,0,0.08)",
+                        background: "rgba(255,255,255,0.9)",
+                        fontSize: "15px",
+                        outline: "none",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
 
-            {/* PASSWORD */}
-            <div style={{ marginBottom: "18px" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "8px",
-                  color: "#163923",
-                  fontWeight: "600",
-                  fontSize: "14px"
-                }}
-              >
-                Password
-              </label>
-              <div style={{ position: "relative" }}>
-                <Lock
-                  size={18}
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "18px",
-                    transform: "translateY(-50%)",
-                    color: "#567"
-                  }}
-                />
-                <input
-                  type="password"
-                  placeholder={mode === "register" ? "Password (min 6 chars)" : "Enter password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  style={{
-                    width: "100%",
-                    padding: "16px 16px 16px 52px",
-                    borderRadius: "18px",
-                    border: "1px solid rgba(0,0,0,0.08)",
-                    background: "rgba(255,255,255,0.9)",
-                    fontSize: "15px",
-                    outline: "none",
-                    boxSizing: "border-box"
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* CONFIRM PASSWORD (Only in Register mode) */}
-            {mode === "register" && (
-              <div style={{ marginBottom: "22px" }}>
+              {/* EMAIL */}
+              <div style={{ marginBottom: "18px" }}>
                 <label
                   style={{
                     display: "block",
@@ -482,7 +703,51 @@ function Login({ defaultMode = "login" }) {
                     fontSize: "14px"
                   }}
                 >
-                  Confirm Password
+                  Email Address
+                </label>
+                <div style={{ position: "relative" }}>
+                  <Mail
+                    size={18}
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "18px",
+                      transform: "translateY(-50%)",
+                      color: "#567"
+                    }}
+                  />
+                  <input
+                    type="email"
+                    placeholder="Enter email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "16px 16px 16px 52px",
+                      borderRadius: "18px",
+                      border: "1px solid rgba(0,0,0,0.08)",
+                      background: "rgba(255,255,255,0.9)",
+                      fontSize: "15px",
+                      outline: "none",
+                      boxSizing: "border-box"
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* PASSWORD */}
+              <div style={{ marginBottom: "18px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: "8px",
+                    color: "#163923",
+                    fontWeight: "600",
+                    fontSize: "14px"
+                  }}
+                >
+                  Password
                 </label>
                 <div style={{ position: "relative" }}>
                   <Lock
@@ -497,10 +762,10 @@ function Login({ defaultMode = "login" }) {
                   />
                   <input
                     type="password"
-                    placeholder="Confirm your password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required={mode === "register"}
+                    placeholder={mode === "register" ? "Password (min 6 chars)" : "Enter password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
                     style={{
                       width: "100%",
                       padding: "16px 16px 16px 52px",
@@ -514,88 +779,134 @@ function Login({ defaultMode = "login" }) {
                   />
                 </div>
               </div>
-            )}
 
-            {/* FORGOT & REMEMBER (Only in Login mode) */}
-            {mode === "login" && (
-              <div
+              {/* CONFIRM PASSWORD (Only in Register mode) */}
+              {mode === "register" && (
+                <div style={{ marginBottom: "22px" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "8px",
+                      color: "#163923",
+                      fontWeight: "600",
+                      fontSize: "14px"
+                    }}
+                  >
+                    Confirm Password
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <Lock
+                      size={18}
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "18px",
+                        transform: "translateY(-50%)",
+                        color: "#567"
+                      }}
+                    />
+                    <input
+                      type="password"
+                      placeholder="Confirm your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required={mode === "register"}
+                      style={{
+                        width: "100%",
+                        padding: "16px 16px 16px 52px",
+                        borderRadius: "18px",
+                        border: "1px solid rgba(0,0,0,0.08)",
+                        background: "rgba(255,255,255,0.9)",
+                        fontSize: "15px",
+                        outline: "none",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* FORGOT & REMEMBER (Only in Login mode) */}
+              {mode === "login" && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "24px"
+                  }}
+                >
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      fontSize: "14px",
+                      color: "#555",
+                      cursor: "pointer"
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                    />
+                    Remember me
+                  </label>
+
+                  <span
+                    onClick={() => navigate("/forgot-password")}
+                    style={{
+                      color: "#163923",
+                      cursor: "pointer",
+                      fontWeight: "600",
+                      fontSize: "14px"
+                    }}
+                  >
+                    Forgot Password?
+                  </span>
+                </div>
+              )}
+
+              {/* SUBMIT BUTTON */}
+              <button
+                type="submit"
+                disabled={loading}
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "24px"
+                  width: "100%",
+                  padding: "18px",
+                  border: "none",
+                  borderRadius: "20px",
+                  background: "linear-gradient(135deg,#163923,#285b37)",
+                  color: "#fff",
+                  fontWeight: "700",
+                  fontSize: "16px",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  opacity: loading ? 0.7 : 1,
+                  boxShadow: "0 14px 30px rgba(22,57,35,0.2)",
+                  transition: "0.3s ease"
                 }}
               >
-                <label
+                <div
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "8px",
-                    fontSize: "14px",
-                    color: "#555",
-                    cursor: "pointer"
+                    justifyContent: "center",
+                    gap: "10px"
                   }}
                 >
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                  />
-                  Remember me
-                </label>
-
-                <span
-                  onClick={() => navigate("/forgot-password")}
-                  style={{
-                    color: "#163923",
-                    cursor: "pointer",
-                    fontWeight: "600",
-                    fontSize: "14px"
-                  }}
-                >
-                  Forgot Password?
-                </span>
-              </div>
-            )}
-
-            {/* SUBMIT BUTTON */}
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: "100%",
-                padding: "18px",
-                border: "none",
-                borderRadius: "20px",
-                background: "linear-gradient(135deg,#163923,#285b37)",
-                color: "#fff",
-                fontWeight: "700",
-                fontSize: "16px",
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.7 : 1,
-                boxShadow: "0 14px 30px rgba(22,57,35,0.2)",
-                transition: "0.3s ease"
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "10px"
-                }}
-              >
-                {loading
-                  ? mode === "register"
-                    ? "Creating Account & Logging In..."
-                    : "Logging In..."
-                  : mode === "register"
-                  ? "Create Account & Sign In"
-                  : "Sign In To Account"}
-                <ArrowRight size={18} />
-              </div>
-            </button>
-          </form>
+                  {loading
+                    ? mode === "register"
+                      ? "Creating Account & Logging In..."
+                      : "Logging In..."
+                    : mode === "register"
+                    ? "Create Account & Sign In"
+                    : "Sign In To Account"}
+                  <ArrowRight size={18} />
+                </div>
+              </button>
+            </form>
+          )}
 
           {/* SECURITY FOOTER */}
           <div

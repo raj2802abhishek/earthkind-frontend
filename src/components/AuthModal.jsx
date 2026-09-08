@@ -141,12 +141,16 @@ function AuthModal({ close }) {
 
   // ---------------- SEND PHONE OTP ----------------
   const sendPhoneOTP = async () => {
+    if (!phone.trim()) {
+      toast.error("Please enter your mobile number");
+      return;
+    }
     setLoading(true);
 
     try {
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/users/send-phone-otp`,
-        { phone }
+        { phone, name: name.trim() || undefined }
       );
 
       toast.success("OTP sent");
@@ -158,7 +162,7 @@ function AuthModal({ close }) {
 
     } catch (err) {
       toast.error(
-        err.response?.data?.message || "Error"
+        err.response?.data?.message || "Error sending OTP"
       );
     } finally {
       setLoading(false);
@@ -167,6 +171,10 @@ function AuthModal({ close }) {
 
   // ---------------- VERIFY PHONE OTP ----------------
   const verifyPhoneOTP = async () => {
+    if (!otp.trim()) {
+      toast.error("Please enter the OTP");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -174,7 +182,8 @@ function AuthModal({ close }) {
         `${import.meta.env.VITE_API_URL}/api/users/verify-phone-otp`,
         {
           phone,
-          otp
+          otp,
+          name: name.trim() || undefined
         }
       );
 
@@ -190,8 +199,12 @@ function AuthModal({ close }) {
       setTimeout(() => {
         resetModal();
         close();
-        navigate("/");
-      }, 1500);
+        if (res.data.user?.isAdmin) {
+          navigate("/admin");
+        } else {
+          navigate("/account");
+        }
+      }, 1200);
 
     } catch (err) {
       toast.error(
@@ -372,8 +385,9 @@ function AuthModal({ close }) {
                   {step === 1 && "Login with Phone"}
                   {step === 2 && "Enter OTP"}
                   {step === 3 && "Login with Email"}
-                  {step === 4 && "Create Account"}
+                  {step === 4 && "Create Account with Email"}
                   {step === 5 && "Reset Password"}
+                  {step === 6 && "Register with Phone"}
                 </h2>
 
                 {/* PHONE LOGIN */}
@@ -401,11 +415,18 @@ function AuthModal({ close }) {
                       )}
                     </button>
 
+                    <p
+                      style={smallLink}
+                      onClick={() => setStep(6)}
+                    >
+                      New user? Register with Phone
+                    </p>
+
                     <div
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        marginTop: "24px",
+                        marginTop: "20px",
                         marginBottom: "16px"
                       }}
                     >
@@ -441,6 +462,93 @@ function AuthModal({ close }) {
                       onClick={() => setStep(3)}
                     >
                       Continue with Email
+                    </p>
+                  </>
+                )}
+
+                {/* PHONE REGISTER */}
+                {step === 6 && (
+                  <>
+                    <input
+                      placeholder="Full Name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      style={input}
+                    />
+
+                    <input
+                      placeholder="+91 Enter Mobile Number"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      style={input}
+                    />
+
+                    <button
+                      type="button"
+                      style={button}
+                      onClick={() => {
+                        if (!name.trim()) {
+                          toast.error("Please enter your full name");
+                          return;
+                        }
+                        sendPhoneOTP();
+                      }}
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <div style={spinner}></div>
+                      ) : (
+                        "Register & Get OTP"
+                      )}
+                    </button>
+
+                    <p
+                      style={smallLink}
+                      onClick={() => setStep(1)}
+                    >
+                      Already have an account? Login with Phone
+                    </p>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginTop: "20px",
+                        marginBottom: "16px"
+                      }}
+                    >
+                      <div
+                        style={{
+                          flex: 1,
+                          height: "1px",
+                          background: "#ececec"
+                        }}
+                      />
+
+                      <span
+                        style={{
+                          margin: "0 12px",
+                          color: "#888",
+                          fontSize: "13px"
+                        }}
+                      >
+                        OR
+                      </span>
+
+                      <div
+                        style={{
+                          flex: 1,
+                          height: "1px",
+                          background: "#ececec"
+                        }}
+                      />
+                    </div>
+
+                    <p
+                      style={linkText}
+                      onClick={() => setStep(4)}
+                    >
+                      Register with Email
                     </p>
                   </>
                 )}
