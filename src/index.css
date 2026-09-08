@@ -2319,6 +2319,29 @@ body,
 }
 
 /* ==========================================================================
+   DESKTOP RESPONSIVE CONTAINER MARGINS (WISHLIST & CHECKOUT > 1024px)
+   ========================================================================== */
+@media (min-width: 1025px) {
+  .wishlist-page-container {
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 30px 40px 80px 40px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (min-width: 851px) {
+  .checkout-page-wrapper {
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 30px 40px 60px 40px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* ==========================================================================
    WISHLIST RESPONSIVE OVERRIDES (MOBILE & TABLET <= 1024px)
    ========================================================================== */
 @media (max-width: 1024px) {

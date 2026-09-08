@@ -500,7 +500,7 @@ function Checkout() {
           width: 100%;
           max-width: 1200px;
           margin: 0 auto;
-          padding: 24px 24px 60px 24px;
+          padding: 30px 40px 60px 40px;
           box-sizing: border-box;
         }
 
