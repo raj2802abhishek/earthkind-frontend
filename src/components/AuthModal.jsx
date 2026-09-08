@@ -4,6 +4,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
+import { Eye, EyeOff } from "lucide-react";
 
 import slide1 from "../assets/login/slide1.png";
 import slide2 from "../assets/login/slide2.png";
@@ -17,6 +18,7 @@ function AuthModal({ close }) {
   const [otp, setOtp] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -139,7 +141,7 @@ function AuthModal({ close }) {
     }
   };
 
-  // ---------------- SEND PHONE OTP ----------------
+  // ---------------- DIRECT PHONE LOGIN / REGISTER (NO OTP REQUIRED) ----------------
   const sendPhoneOTP = async () => {
     if (!phone.trim()) {
       toast.error("Please enter your mobile number");
@@ -148,21 +150,33 @@ function AuthModal({ close }) {
     setLoading(true);
 
     try {
-      await axios.post(
+      const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/users/send-phone-otp`,
         { phone, name: name.trim() || undefined }
       );
 
-      toast.success("OTP sent");
+      if (res.data.token && res.data.user) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        window.dispatchEvent(new Event("userChanged"));
+      }
 
-      setStep(2);
+      toast.success("Login successful 🎉");
+      setSuccess(true);
 
-      setTimer(30);
-      setCanResend(false);
+      setTimeout(() => {
+        resetModal();
+        close();
+        if (res.data.user?.isAdmin) {
+          navigate("/admin");
+        } else {
+          navigate("/account");
+        }
+      }, 1000);
 
     } catch (err) {
       toast.error(
-        err.response?.data?.message || "Error sending OTP"
+        err.response?.data?.message || "Phone login failed"
       );
     } finally {
       setLoading(false);
@@ -498,7 +512,7 @@ function AuthModal({ close }) {
                       {loading ? (
                         <div style={spinner}></div>
                       ) : (
-                        "Register & Get OTP"
+                        "Register with Phone Number"
                       )}
                     </button>
 
@@ -614,15 +628,32 @@ function AuthModal({ close }) {
                       style={input}
                     />
 
-                    <input
-                      type="password"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) =>
-                        setPassword(e.target.value)
-                      }
-                      style={input}
-                    />
+                    <div style={{ position: "relative", width: "100%" }}>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) =>
+                          setPassword(e.target.value)
+                        }
+                        style={{ ...input, paddingRight: "45px" }}
+                      />
+                      <span
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{
+                          position: "absolute",
+                          right: "16px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          cursor: "pointer",
+                          color: "#666",
+                          display: "flex",
+                          alignItems: "center"
+                        }}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </span>
+                    </div>
 
                     <button
                       type="button"
@@ -681,15 +712,32 @@ function AuthModal({ close }) {
                       style={input}
                     />
 
-                    <input
-                      type="password"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) =>
-                        setPassword(e.target.value)
-                      }
-                      style={input}
-                    />
+                    <div style={{ position: "relative", width: "100%" }}>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) =>
+                          setPassword(e.target.value)
+                        }
+                        style={{ ...input, paddingRight: "45px" }}
+                      />
+                      <span
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{
+                          position: "absolute",
+                          right: "16px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          cursor: "pointer",
+                          color: "#666",
+                          display: "flex",
+                          alignItems: "center"
+                        }}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </span>
+                    </div>
 
                     <button
                       type="button"

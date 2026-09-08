@@ -13,7 +13,9 @@ import {
   LogIn,
   Phone,
   Smartphone,
-  KeyRound
+  KeyRound,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
 function FeatureItem({ icon, title, text }) {
@@ -55,18 +57,17 @@ function Login({ defaultMode = "login" }) {
   // Form States
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [timer, setTimer] = useState(0);
   const [email, setEmail] = useState(() => localStorage.getItem("rememberedEmail") || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-  // Handle Phone OTP Send
+  // Handle Direct Phone Login / Register (No OTP step)
   const handleSendPhoneOTP = async (e) => {
     if (e) e.preventDefault();
     if (mode === "register" && !name.trim()) {
@@ -80,15 +81,30 @@ function Login({ defaultMode = "login" }) {
 
     try {
       setLoading(true);
-      await axios.post(`${API_BASE}/api/users/send-phone-otp`, {
+      const res = await axios.post(`${API_BASE}/api/users/send-phone-otp`, {
         phone: phone.trim(),
         name: mode === "register" ? name.trim() : undefined
       });
-      toast.success("OTP sent to " + phone + " 📲");
-      setOtpSent(true);
-      setTimer(30);
+
+      if (res.data.token && res.data.user) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        window.dispatchEvent(new Event("userChanged"));
+      }
+
+      const msg = mode === "register"
+        ? "Registered & Logged in successfully! Welcome to Earthkind 🎉"
+        : "Login successful! Welcome back 🎉";
+
+      toast.success(res.data.message || msg);
+
+      if (res.data.user?.isAdmin) {
+        navigate("/admin");
+      } else {
+        navigate("/account");
+      }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to send OTP ❌");
+      toast.error(error.response?.data?.message || "Phone login failed ❌");
     } finally {
       setLoading(false);
     }
@@ -459,7 +475,7 @@ function Login({ defaultMode = "login" }) {
           </div>
 
           {authMethod === "phone" ? (
-            <form onSubmit={otpSent ? handleVerifyPhoneOTP : handleSendPhoneOTP}>
+            <form onSubmit={handleSendPhoneOTP}>
               {/* FULL NAME (Only in Register mode) */}
               {mode === "register" && (
                 <div style={{ marginBottom: "18px" }}>
@@ -507,7 +523,7 @@ function Login({ defaultMode = "login" }) {
               )}
 
               {/* PHONE NUMBER */}
-              <div style={{ marginBottom: "18px" }}>
+              <div style={{ marginBottom: "24px" }}>
                 <label
                   style={{
                     display: "block",
@@ -536,7 +552,6 @@ function Login({ defaultMode = "login" }) {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     required
-                    disabled={otpSent}
                     style={{
                       width: "100%",
                       padding: "16px 16px 16px 52px",
@@ -550,63 +565,6 @@ function Login({ defaultMode = "login" }) {
                   />
                 </div>
               </div>
-
-              {/* OTP INPUT (if OTP sent) */}
-              {otpSent && (
-                <div style={{ marginBottom: "18px" }}>
-                  <label
-                    style={{
-                      display: "block",
-                      marginBottom: "8px",
-                      color: "#163923",
-                      fontWeight: "600",
-                      fontSize: "14px"
-                    }}
-                  >
-                    Enter 6-Digit OTP
-                  </label>
-                  <div style={{ position: "relative" }}>
-                    <KeyRound
-                      size={18}
-                      style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "18px",
-                        transform: "translateY(-50%)",
-                        color: "#567"
-                      }}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Enter OTP"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      required
-                      style={{
-                        width: "100%",
-                        padding: "16px 16px 16px 52px",
-                        borderRadius: "18px",
-                        border: "1px solid rgba(0,0,0,0.08)",
-                        background: "rgba(255,255,255,0.9)",
-                        fontSize: "15px",
-                        outline: "none",
-                        boxSizing: "border-box"
-                      }}
-                    />
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px", fontSize: "13px" }}>
-                    <span style={{ color: "#666" }}>
-                      {timer > 0 ? `Resend in ${timer}s` : ""}
-                    </span>
-                    <span
-                      style={{ color: "#163923", fontWeight: "700", cursor: "pointer" }}
-                      onClick={handleSendPhoneOTP}
-                    >
-                      Resend OTP
-                    </span>
-                  </div>
-                </div>
-              )}
 
               {/* SUBMIT BUTTON */}
               <button
@@ -636,10 +594,8 @@ function Login({ defaultMode = "login" }) {
                   }}
                 >
                   {loading
-                    ? "Processing..."
-                    : !otpSent
-                    ? mode === "register" ? "Send Registration OTP" : "Send Login OTP"
-                    : mode === "register" ? "Verify OTP & Complete Registration" : "Verify OTP & Sign In"}
+                    ? mode === "register" ? "Creating Account..." : "Logging In..."
+                    : mode === "register" ? "Register with Phone Number" : "Sign In To Account"}
                   <ArrowRight size={18} />
                 </div>
               </button>
@@ -761,14 +717,14 @@ function Login({ defaultMode = "login" }) {
                     }}
                   />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder={mode === "register" ? "Password (min 6 chars)" : "Enter password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     style={{
                       width: "100%",
-                      padding: "16px 16px 16px 52px",
+                      padding: "16px 45px 16px 52px",
                       borderRadius: "18px",
                       border: "1px solid rgba(0,0,0,0.08)",
                       background: "rgba(255,255,255,0.9)",
@@ -777,6 +733,21 @@ function Login({ defaultMode = "login" }) {
                       boxSizing: "border-box"
                     }}
                   />
+                  <span
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      position: "absolute",
+                      right: "18px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      cursor: "pointer",
+                      color: "#567",
+                      display: "flex",
+                      alignItems: "center"
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </span>
                 </div>
               </div>
 
@@ -806,14 +777,14 @@ function Login({ defaultMode = "login" }) {
                       }}
                     />
                     <input
-                      type="password"
+                      type={showConfirmPassword ? "text" : "password"}
                       placeholder="Confirm your password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required={mode === "register"}
                       style={{
                         width: "100%",
-                        padding: "16px 16px 16px 52px",
+                        padding: "16px 45px 16px 52px",
                         borderRadius: "18px",
                         border: "1px solid rgba(0,0,0,0.08)",
                         background: "rgba(255,255,255,0.9)",
@@ -822,6 +793,21 @@ function Login({ defaultMode = "login" }) {
                         boxSizing: "border-box"
                       }}
                     />
+                    <span
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      style={{
+                        position: "absolute",
+                        right: "18px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        cursor: "pointer",
+                        color: "#567",
+                        display: "flex",
+                        alignItems: "center"
+                      }}
+                    >
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </span>
                   </div>
                 </div>
               )}
