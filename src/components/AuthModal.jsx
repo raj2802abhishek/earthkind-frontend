@@ -79,8 +79,12 @@ function AuthModal({ close }) {
       setTimeout(() => {
         resetModal();
         close();
-        navigate("/");
-      }, 1500);
+        if (res.data.user?.isAdmin) {
+          navigate("/admin");
+        } else {
+          navigate("/account");
+        }
+      }, 1000);
 
     } catch (error) {
       toast.error(
@@ -96,8 +100,9 @@ function AuthModal({ close }) {
     setLoading(true);
 
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/users/register`,
+      const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const res = await axios.post(
+        `${API_BASE}/api/users/register`,
         {
           name,
           email,
@@ -105,13 +110,29 @@ function AuthModal({ close }) {
         }
       );
 
-      toast.success("Registered successfully");
+      if (res.data.token && res.data.user) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        window.dispatchEvent(new Event("userChanged"));
+      }
 
-      setStep(3);
+      toast.success("Account created & logged in! 🎉");
+
+      setSuccess(true);
+
+      setTimeout(() => {
+        resetModal();
+        close();
+        if (res.data.user?.isAdmin) {
+          navigate("/admin");
+        } else {
+          navigate("/account");
+        }
+      }, 1000);
 
     } catch (error) {
       toast.error(
-        error.response?.data?.message || "Error"
+        error.response?.data?.message || "Registration failed"
       );
     } finally {
       setLoading(false);
@@ -879,65 +900,61 @@ const responsiveStyles = `
 @media (max-width: 768px){
 
   .auth-modal{
-
-    width: 94vw !important;
-    max-width: 94vw !important;
-
-    height: 420px !important;
-
-    flex-direction: row !important;
-
-    border-radius: 22px !important;
-
+    width: 90vw !important;
+    max-width: 380px !important;
+    height: auto !important;
+    min-height: unset !important;
+    flex-direction: column !important;
+    border-radius: 28px !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2) !important;
+    margin: auto !important;
   }
 
   .auth-left{
-
-    width: 42% !important;
-    height: 100% !important;
-    min-height: 100% !important;
-
+    display: none !important;
   }
 
   .auth-right{
+    width: 100% !important;
+    padding: 34px 24px 28px !important;
+    box-sizing: border-box !important;
+  }
 
-    width: 58% !important;
+  .auth-right h2 {
+    font-size: 24px !important;
+    margin-bottom: 22px !important;
+    letter-spacing: -0.5px !important;
+  }
 
-    padding:
-      20px 18px 18px !important;
+  .auth-right input {
+    height: 52px !important;
+    font-size: 15px !important;
+    border-radius: 999px !important;
+    padding: 0 20px !important;
+    margin-top: 10px !important;
+    border: 1px solid #e0e0e0 !important;
+  }
 
+  .auth-right button {
+    height: 52px !important;
+    font-size: 16px !important;
+    border-radius: 999px !important;
+    margin-top: 16px !important;
+    background: #234d2c !important;
   }
 
 }
 
-
 @media (max-width: 480px){
 
   .auth-modal{
-
-    width: 255vw !important;
-    max-width: 125vw !important;
-
-    height: 360px !important;
-
-    border-radius: 20px !important;
-
-  }
-
-  .auth-left{
-
-    width: 40% !important;
-    height: 100% !important;
-
+    width: 92vw !important;
+    max-width: 350px !important;
+    border-radius: 26px !important;
   }
 
   .auth-right{
-
-    width: 60% !important;
-
-    padding:
-      16px 14px 14px !important;
-
+    padding: 30px 20px 24px !important;
   }
 
 }

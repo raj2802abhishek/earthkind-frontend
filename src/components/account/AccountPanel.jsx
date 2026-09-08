@@ -2,13 +2,13 @@ import axios from "axios";
 import PaymentHistorySection from "./PaymentHistorySection";
 import ProfileSection from "./ProfileSection";
 import RewardPointsSection
-from "./RewardPointsSection";
+  from "./RewardPointsSection";
 import MyCouponsSection
-from "./MyCouponsSection";
+  from "./MyCouponsSection";
 import RecentlyViewedSection
-from "./RecentlyViewedSection";
+  from "./RecentlyViewedSection";
 import AccountSettingsSection
-from "./AccountSettingsSection";
+  from "./AccountSettingsSection";
 import React, { useEffect, useState } from "react";
 
 import {
@@ -34,43 +34,43 @@ function AccountPanel({
 }) {
 
   const [activeTab, setActiveTab] =
-  useState("dashboard");
+    useState("dashboard");
   const navigate = useNavigate();
   const [rewardPoints, setRewardPoints] =
-  useState(0);
+    useState(0);
 
   const wishlist =
     JSON.parse(
       localStorage.getItem("wishlist")
     ) || [];
 
-    useEffect(() => {
+  useEffect(() => {
 
-  const fetchRewards = async () => {
+    const fetchRewards = async () => {
 
-    try {
+      try {
 
-      if (!user?.email) return;
+        if (!user?.email) return;
 
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/rewards/${user.email}`
-      );
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/rewards/${user.email}`
+        );
 
-      setRewardPoints(
-        res.data.points || 0
-      );
+        setRewardPoints(
+          res.data.points || 0
+        );
 
-    } catch (error) {
+      } catch (error) {
 
-      console.log(error);
+        console.log(error);
 
-    }
+      }
 
-  };
+    };
 
-  fetchRewards();
+    fetchRewards();
 
-}, [user]);
+  }, [user]);
 
   // =========================
   // ADDRESS STATES
@@ -78,41 +78,41 @@ function AccountPanel({
 
   const [showAddressModal,
     setShowAddressModal] =
-      useState(false);
+    useState(false);
 
   const [addresses,
     setAddresses] =
-      useState(
+    useState(
 
-        JSON.parse(
-          localStorage.getItem(
-            "savedAddresses"
-          )
-        ) || []
+      JSON.parse(
+        localStorage.getItem(
+          "savedAddresses"
+        )
+      ) || []
 
-      );
+    );
 
   const [editingId,
-  setEditingId] =
+    setEditingId] =
     useState(null);
 
   const [newAddress,
     setNewAddress] =
-      useState({
+    useState({
 
-        type: "Home",
+      type: "Home",
 
-        fullName:
-          user?.name || "",
+      fullName:
+        user?.name || "",
 
-        address: "",
+      address: "",
 
-        city: "",
+      city: "",
 
-        pincode: "",
+      pincode: "",
 
-        phone: ""
-      });
+      phone: ""
+    });
 
   // =========================
   // SAVE ADDRESS
@@ -120,97 +120,97 @@ function AccountPanel({
 
   const handleSaveAddress = () => {
 
-  if (
-    !newAddress.address ||
-    !newAddress.city ||
-    !newAddress.phone
-  ) {
+    if (
+      !newAddress.address ||
+      !newAddress.city ||
+      !newAddress.phone
+    ) {
 
-    alert(
-      "Please fill all fields"
-    );
+      alert(
+        "Please fill all fields"
+      );
 
-    return;
-  }
+      return;
+    }
 
-  let updatedAddresses = [];
-  // LIMIT ONLY 2 ADDRESSES
+    let updatedAddresses = [];
+    // LIMIT ONLY 2 ADDRESSES
 
-if (
-  !editingId &&
-  addresses.length >= 2
-) {
+    if (
+      !editingId &&
+      addresses.length >= 2
+    ) {
 
-  alert(
-    "You can only save 2 addresses"
-  );
+      alert(
+        "You can only save 2 addresses"
+      );
 
-  return;
-}
+      return;
+    }
 
-  // =====================
-  // EDIT EXISTING ADDRESS
-  // =====================
+    // =====================
+    // EDIT EXISTING ADDRESS
+    // =====================
 
-  if (editingId) {
+    if (editingId) {
 
-    updatedAddresses =
-      addresses.map((item) =>
+      updatedAddresses =
+        addresses.map((item) =>
 
-        item.id === editingId
-          ? {
+          item.id === editingId
+            ? {
               ...item,
               ...newAddress
             }
-          : item
-      );
+            : item
+        );
 
-  }
+    }
 
-  // =====================
-  // ADD NEW ADDRESS
-  // =====================
+    // =====================
+    // ADD NEW ADDRESS
+    // =====================
 
-  else {
+    else {
 
-    updatedAddresses = [
+      updatedAddresses = [
 
-      ...addresses,
+        ...addresses,
 
-      {
-        ...newAddress,
-        id: Date.now()
-      }
-    ];
-  }
+        {
+          ...newAddress,
+          id: Date.now()
+        }
+      ];
+    }
 
-  setAddresses(
-    updatedAddresses
-  );
-
-  localStorage.setItem(
-
-    "savedAddresses",
-
-    JSON.stringify(
+    setAddresses(
       updatedAddresses
-    )
-  );
+    );
 
-  // RESET
-  setEditingId(null);
+    localStorage.setItem(
 
-  setShowAddressModal(false);
+      "savedAddresses",
 
-  setNewAddress({
-    type: "Home",
-    fullName: user?.name || "",
-    address: "",
-    city: "",
-    pincode: "",
-    phone: ""
-  });
-};
+      JSON.stringify(
+        updatedAddresses
+      )
+    );
+
+    // RESET
+    setEditingId(null);
+
+    setShowAddressModal(false);
+
+    setNewAddress({
+      type: "Home",
+      fullName: user?.name || "",
+      address: "",
+      city: "",
+      pincode: "",
+      phone: ""
+    });
+  };
 
   // =========================
   // DELETE ADDRESS
@@ -234,31 +234,31 @@ if (
 
   const editAddress = (item) => {
 
-  setEditingId(item.id);
+    setEditingId(item.id);
 
-  setNewAddress({
+    setNewAddress({
 
-    type:
-      item.type || "Home",
+      type:
+        item.type || "Home",
 
-    fullName:
-      item.fullName || "",
+      fullName:
+        item.fullName || "",
 
-    address:
-      item.address || "",
+      address:
+        item.address || "",
 
-    city:
-      item.city || "",
+      city:
+        item.city || "",
 
-    pincode:
-      item.pincode || "",
+      pincode:
+        item.pincode || "",
 
-    phone:
-      item.phone || ""
-  });
+      phone:
+        item.phone || ""
+    });
 
-  setShowAddressModal(true);
-};
+    setShowAddressModal(true);
+  };
   return (
 
     <>
@@ -276,7 +276,7 @@ if (
           top: "58px",
 
           right: 0,
-          
+
           width:
             window.innerWidth <= 768
               ? "94vw"
@@ -464,11 +464,11 @@ if (
             icon={<FiHeart />}
           />
 
-         <AccountStats
-  number={rewardPoints}
-  label="Reward Points"
-  icon={<FiStar />}
-/>
+          <AccountStats
+            number={rewardPoints}
+            label="Reward Points"
+            icon={<FiStar />}
+          />
 
           <AccountStats
             number={addresses.length}
@@ -479,100 +479,100 @@ if (
         </div>
 
         {/* MAIN */}
-      <div
-  style={{
-    display: "grid",
-
-    gridTemplateColumns:
-      window.innerWidth <= 768
-        ? "1fr"
-        : "170px 1fr",
-
-    gap: "12px"
-  }}
->
-
-        <AccountSidebar
-  navigate={navigate}
-  setShowMenu={
-    setShowMenu
-  }
-  activeTab={activeTab}
-  setActiveTab={setActiveTab}
-/>
         <div
-  style={{
-    display: "flex",
+          style={{
+            display: "grid",
 
-    flexDirection: "column",
+            gridTemplateColumns:
+              window.innerWidth <= 768
+                ? "1fr"
+                : "170px 1fr",
 
-    gap: "10px"
-  }}
->
+            gap: "12px"
+          }}
+        >
 
-           {activeTab === "dashboard" && (
-  <>
-    <RecentOrderCard
-      lastOrder={lastOrder}
-    />
+          <AccountSidebar
+            navigate={navigate}
+            setShowMenu={
+              setShowMenu
+            }
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+          <div
+            style={{
+              display: "flex",
 
-    <SavedAddressCard
-      user={user}
-      addresses={addresses}
-      setShowAddressModal={
-        setShowAddressModal
-      }
-      deleteAddress={
-        deleteAddress
-      }
-      editAddress={
-        editAddress
-      }
-    />
+              flexDirection: "column",
 
-    <AccountStatus />
-  </>
-)}
+              gap: "10px"
+            }}
+          >
 
-{activeTab === "profile" && (
-  <ProfileSection
-    user={user}
-    setUser={() => {}}
-  />
-)}
-{activeTab === "paymenthistory" && (
-  <PaymentHistorySection />
-)}
-{
-  activeTab === "rewardpoints" && (
-    <RewardPointsSection />
-  )
-}
-{
-  activeTab === "mycoupons" && (
-    <MyCouponsSection />
-  )
-}
+            {activeTab === "dashboard" && (
+              <>
+                <RecentOrderCard
+                  lastOrder={lastOrder}
+                />
 
-{
-  activeTab ===
-  "recentlyviewed" && (
+                <SavedAddressCard
+                  user={user}
+                  addresses={addresses}
+                  setShowAddressModal={
+                    setShowAddressModal
+                  }
+                  deleteAddress={
+                    deleteAddress
+                  }
+                  editAddress={
+                    editAddress
+                  }
+                />
 
-    <RecentlyViewedSection
-  setShowMenu={setShowMenu}
-/>
+                <AccountStatus />
+              </>
+            )}
 
-  )
-}
+            {activeTab === "profile" && (
+              <ProfileSection
+                user={user}
+                setUser={() => { }}
+              />
+            )}
+            {activeTab === "paymenthistory" && (
+              <PaymentHistorySection />
+            )}
+            {
+              activeTab === "rewardpoints" && (
+                <RewardPointsSection />
+              )
+            }
+            {
+              activeTab === "mycoupons" && (
+                <MyCouponsSection />
+              )
+            }
 
-{
-  activeTab ===
-  "accountsettings" && (
+            {
+              activeTab ===
+              "recentlyviewed" && (
 
-    <AccountSettingsSection />
+                <RecentlyViewedSection
+                  setShowMenu={setShowMenu}
+                />
 
-  )
-}
+              )
+            }
+
+            {
+              activeTab ===
+              "accountsettings" && (
+
+                <AccountSettingsSection />
+
+              )
+            }
 
           </div>
 
@@ -648,9 +648,9 @@ if (
                   color: "#163923"
                 }}
               >
-              {editingId
-  ? "Edit Address"
-  : "Add Address"}
+                {editingId
+                  ? "Edit Address"
+                  : "Add Address"}
               </h2>
 
               <input
@@ -767,8 +767,8 @@ if (
                   }}
                 >
                   {editingId
-  ? "Update Address"
-  : "Save Address"}
+                    ? "Update Address"
+                    : "Save Address"}
                 </button>
 
                 <button

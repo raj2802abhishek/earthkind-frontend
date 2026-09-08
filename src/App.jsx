@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Routes, Route, NavLink, useNavigate } from "react-router-dom";
+import { Routes, Route, NavLink, useNavigate, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
@@ -12,12 +12,23 @@ import {
   FiUser,
   FiHeart
 } from "react-icons/fi";
+import {
+  FaInstagram,
+  FaFacebookF,
+  FaWhatsapp,
+  FaPinterestP,
+  FaYoutube
+} from "react-icons/fa";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import MyOrders from "./pages/MyOrders";
+import Account from "./pages/Account";
 import ForgotPassword from "./pages/ForgotPassword";
+import ContactUs from "./pages/ContactUs";
+import AboutUs from "./pages/AboutUs";
+import HerbalPowders from "./pages/HerbalPowders";
 import AuthModal from "./components/AuthModal";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -25,192 +36,196 @@ import Wishlist from "./pages/Wishlist";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop";
 import AccountPanel from "./components/account/AccountPanel";
-
-
+import LiveChatWidget from "./components/LiveChatWidget";
+import HeaderSearchBar from "./components/HeaderSearchBar";
+import toast from "react-hot-toast";
+import { useTranslation } from "./utils/useTranslation";
+import { setLanguage } from "./utils/translations";
 
 function App() {
+  const { lang, t } = useTranslation();
 
-const navigate = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
+  const [lastOrder, setLastOrder] = useState(null);
+  const [showAuth, setShowAuth] = useState(false);
 
-
-const [lastOrder, setLastOrder] = useState(null);
-const [showAuth, setShowAuth] = useState(false);
- 
-const [showMenu, setShowMenu] = useState(false);
-const [navbarScrolled, setNavbarScrolled] = useState(false);
-const [mobileNav, setMobileNav] = useState(false);
-const navTextColor = navbarScrolled ? "#fff" : "#163923";
-const [user, setUser] = useState(
-  JSON.parse(localStorage.getItem("user"))
-);
-
-const [cartCount, setCartCount] = useState(0);
-const [wishlistCount, setWishlistCount] = useState(0);
-
-useEffect(() => {
-  const updateUser = () => {
-    setUser(JSON.parse(localStorage.getItem("user")));
-  };
-
-  window.addEventListener("userChanged", updateUser);
-
-  return () => {
-    window.removeEventListener("userChanged", updateUser);
-  };
-}, []);
-
-useEffect(() => {
-
-  const fetchLatestOrder = async () => {
-
-    try {
-
-      const currentUser =
-        JSON.parse(
-          localStorage.getItem("user")
-        );
-
-      if (!currentUser?.email) {
-
-        setLastOrder(null);
-
-        return;
-      }
-
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/orders/my-orders/${currentUser.email}`
-      );
-
-      const data = await res.json();
-
-      setLastOrder(
-        data?.[0] || null
-      );
-
-    } catch (err) {
-
-      console.log(err);
-
-    }
-
-  };
-
-  // INITIAL FETCH
-  fetchLatestOrder();
-
-  // REALTIME ORDER UPDATE
-  const handleOrderPlaced = () => {
-
-  setTimeout(() => {
-
-    fetchLatestOrder();
-
-  }, 1200);
-
-};
-
-  window.addEventListener(
-    "orderPlaced",
-    handleOrderPlaced
+  const [showMenu, setShowMenu] = useState(false);
+  const [navbarScrolled, setNavbarScrolled] = useState(false);
+  const [mobileNav, setMobileNav] = useState(false);
+  const navTextColor = navbarScrolled ? "#fff" : "#163923";
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("user"))
   );
 
-  return () => {
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
 
-    window.removeEventListener(
+  useEffect(() => {
+    const updateUser = () => {
+      setUser(JSON.parse(localStorage.getItem("user")));
+    };
+
+    window.addEventListener("userChanged", updateUser);
+
+    return () => {
+      window.removeEventListener("userChanged", updateUser);
+    };
+  }, []);
+
+  useEffect(() => {
+
+    const fetchLatestOrder = async () => {
+
+      try {
+
+        const currentUser =
+          JSON.parse(
+            localStorage.getItem("user")
+          );
+
+        if (!currentUser?.email) {
+
+          setLastOrder(null);
+
+          return;
+        }
+
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/orders/my-orders/${currentUser.email}`
+        );
+
+        const data = await res.json();
+
+        setLastOrder(
+          data?.[0] || null
+        );
+
+      } catch (err) {
+
+        console.log(err);
+
+      }
+
+    };
+
+    // INITIAL FETCH
+    fetchLatestOrder();
+
+    // REALTIME ORDER UPDATE
+    const handleOrderPlaced = () => {
+
+      setTimeout(() => {
+
+        fetchLatestOrder();
+
+      }, 1200);
+
+    };
+
+    window.addEventListener(
       "orderPlaced",
       handleOrderPlaced
     );
 
-  };
+    return () => {
 
-}, [user]);
+      window.removeEventListener(
+        "orderPlaced",
+        handleOrderPlaced
+      );
 
-useEffect(() => {
-  const updateCartCount = () => {
-    const savedCart =
-      JSON.parse(localStorage.getItem("cart")) || [];
-   const totalItems = savedCart.reduce(
-  (total, item) =>
-    total + Number(item.quantity || 1),
-  0
-);
+    };
 
-setCartCount(totalItems);
-  };
+  }, [user]);
 
-  updateCartCount();
+  useEffect(() => {
+    const updateCartCount = () => {
+      const savedCart =
+        JSON.parse(localStorage.getItem("cart")) || [];
+      const totalItems = savedCart.reduce(
+        (total, item) =>
+          total + Number(item.quantity || 1),
+        0
+      );
 
-  window.addEventListener(
-    "cartUpdated",
-    updateCartCount
-  );
-  return () => {
-    window.removeEventListener(
+      setCartCount(totalItems);
+    };
+
+    updateCartCount();
+
+    window.addEventListener(
       "cartUpdated",
       updateCartCount
     );
-  };
-}, []);
+    return () => {
+      window.removeEventListener(
+        "cartUpdated",
+        updateCartCount
+      );
+    };
+  }, []);
 
-useEffect(() => {
-  const updateWishlistCount = () => {
-    const savedWishlist =
-      JSON.parse(localStorage.getItem("wishlist")) || [];
+  useEffect(() => {
+    const updateWishlistCount = () => {
+      const savedWishlist =
+        JSON.parse(localStorage.getItem("wishlist")) || [];
 
-    setWishlistCount(savedWishlist.length);
-  };
+      setWishlistCount(savedWishlist.length);
+    };
 
-  updateWishlistCount();
+    updateWishlistCount();
 
-  window.addEventListener(
-    "wishlistUpdated",
-    updateWishlistCount
-  );
-
-  return () => {
-    window.removeEventListener(
+    window.addEventListener(
       "wishlistUpdated",
       updateWishlistCount
     );
-  };
-}, []);
 
-useEffect(() => {
-  const handleClickOutside = () => {
-    setShowMenu(false);
-  };
+    return () => {
+      window.removeEventListener(
+        "wishlistUpdated",
+        updateWishlistCount
+      );
+    };
+  }, []);
 
-  window.addEventListener("click", handleClickOutside);
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowMenu(false);
+    };
 
-  return () => {
-    window.removeEventListener("click", handleClickOutside);
-  };
-}, []);
-useEffect(() => {
+    window.addEventListener("click", handleClickOutside);
 
-  const handleScroll = () => {
+    return () => {
+      window.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+  useEffect(() => {
 
-    if (window.scrollY > 40) {
-      setNavbarScrolled(true);
-    } else {
-      setNavbarScrolled(false);
-    }
+    const handleScroll = () => {
 
-  };
+      if (window.scrollY > 40) {
+        setNavbarScrolled(true);
+      } else {
+        setNavbarScrolled(false);
+      }
 
-  window.addEventListener(
-    "scroll",
-    handleScroll
-  );
+    };
 
-  return () =>
-    window.removeEventListener(
+    window.addEventListener(
       "scroll",
       handleScroll
     );
 
-}, []);
+    return () =>
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
+
+  }, []);
 
   const dropdownAnimation = `
 @keyframes dropdownFade {
@@ -226,794 +241,819 @@ useEffect(() => {
 `;
 
   return (
-    
+
     <>
-    <ScrollToTop />
+      <ScrollToTop />
 
-    <style>{dropdownAnimation}</style>
+      <style>{dropdownAnimation}</style>
 
-    <style>{dropdownAnimation}</style>
-
-    <nav
-  className={`earth-navbar ${
-    navbarScrolled ? "scrolled" : ""
-  }`}
->
-
-  <div
-  className="nav-inner"
-  style={{
-    minHeight: "72px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between"
-  }}
->
-
-  {/* LOGO */}
-  <NavLink to="/">
-    <img
-      src={logo}
-      alt="Earthkind Naturals"
-      style={{
-        width:
-          window.innerWidth <= 768
-            ? "140px"
-            : "170px",
-
-        objectFit: "contain",
-
-        filter: navbarScrolled
-          ? "brightness(0) invert(1)"
-          : "brightness(0) saturate(100%) sepia(22%) hue-rotate(85deg)"
-      }}
-    />
-  </NavLink>
-
-  {/* NAV LINKS */}
-  <div
-    className={`nav-links ${
-      mobileNav ? "active" : ""
-    }`}
-  >
-
-    <NavLink
-      to="/"
-      className="nav-link"
-      style={{ color: navTextColor }}
-      onClick={() =>
-        setMobileNav(false)
-      }
-    >
-      Home
-    </NavLink>
-
-    <NavLink
-      to="/shop"
-      className="nav-link"
-      style={{ color: navTextColor }}
-      onClick={() =>
-        setMobileNav(false)
-      }
-    >
-      Shop
-    </NavLink>
-
-<div
-  className="nav-link"
-  style={{
-    color: navTextColor,
-    cursor: "pointer",
-  }}
-  onClick={() => {
-
-    setMobileNav(false);
-
-    if (window.location.pathname !== "/") {
-
-      navigate("/");
-
-      setTimeout(() => {
-
-        const section =
-          document.getElementById("categories");
-
-        if (section) {
-          section.scrollIntoView({
-            behavior: "smooth",
-          });
-        }
-
-      }, 300);
-
-    } else {
-
-      const section =
-        document.getElementById("categories");
-
-      if (section) {
-        section.scrollIntoView({
-          behavior: "smooth",
-        });
-      }
-
-    }
-
-  }}
->
-  Categories
-</div>
-   <div
-  className="nav-link"
-  style={{
-    color: navTextColor,
-    cursor: "pointer",
-  }}
-  onClick={() => {
-
-    setMobileNav(false);
-
-    if (window.location.pathname !== "/") {
-
-      navigate("/");
-
-      setTimeout(() => {
-
-        const section =
-          document.getElementById("wellness");
-
-        if (section) {
-          section.scrollIntoView({
-            behavior: "smooth",
-          });
-        }
-
-      }, 300);
-
-    } else {
-
-      const section =
-        document.getElementById("wellness");
-
-      if (section) {
-        section.scrollIntoView({
-          behavior: "smooth",
-        });
-      }
-
-    }
-
-  }}
->
-  Wellness
-</div>
-
-<div
-  className="nav-link"
-  style={{
-    color: navTextColor,
-    cursor: "pointer",
-  }}
-  onClick={() => {
-
-    setMobileNav(false);
-
-    if (window.location.pathname !== "/") {
-
-      navigate("/");
-
-      setTimeout(() => {
-
-        const section =
-          document.getElementById("about");
-
-        if (section) {
-          section.scrollIntoView({
-            behavior: "smooth",
-          });
-        }
-
-      }, 300);
-
-    } else {
-
-      const section =
-        document.getElementById("about");
-
-      if (section) {
-        section.scrollIntoView({
-          behavior: "smooth",
-        });
-      }
-
-    }
-
-  }}
->
-  About
-</div>
-  </div>
-
-  {/* RIGHT SIDE */}
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap:
-        window.innerWidth <= 768
-          ? "14px"
-          : "20px"
-    }}
-  >
-
-    {/* WISHLIST */}
-    <div
-      style={{
-        position: "relative",
-        cursor: "pointer"
-      }}
-    >
-      <FiHeart
-        onClick={() =>
-          navigate("/wishlist")
-        }
-        style={{
-          fontSize:
-            window.innerWidth <= 768
-              ? "22px"
-              : "25px",
-
-          color: navTextColor
-        }}
+      {/* MOBILE NAV BACKDROP OVERLAY */}
+      <div
+        className={`mobile-nav-backdrop ${mobileNav ? "active" : ""}`}
+        onClick={() => setMobileNav(false)}
       />
 
-      <span
-        style={{
-          position: "absolute",
+      {!isAdminRoute && (
+        <nav
+          className={`earth-navbar ${navbarScrolled ? "scrolled" : ""
+            }`}
+        >
 
-          top: "-8px",
+        <div
+          className="nav-inner"
+        >
 
-          right: "-10px",
+          {/* LOGO */}
+          <NavLink to="/">
+            <img
+              src={logo}
+              alt="Earthkind Naturals"
+              className="nav-logo"
+              style={{
+                filter: navbarScrolled
+                  ? "brightness(0) invert(1)"
+                  : "brightness(0) saturate(100%) sepia(22%) hue-rotate(85deg)"
+              }}
+            />
+          </NavLink>
 
-          background: "#d8ef7f",
+          {/* NAV LINKS DRAWER */}
+          <div
+            className={`nav-links ${mobileNav ? "active" : ""
+              }`}
+          >
+            <div className="mobile-drawer-header">
+              <img src={logo} alt="Earthkind" style={{ height: "46px", width: "auto", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+            </div>
 
-          color: "#163923",
+            {/* MOBILE DRAWER USER PROFILE CARD */}
+            <div
+              className="mobile-drawer-user-profile"
+              onClick={() => {
+                setMobileNav(false);
+                if (user) {
+                  navigate("/account");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                } else {
+                  setShowAuth(true);
+                }
+              }}
+            >
+              {user ? (
+                <>
+                  {user.profileImage ? (
+                    <img
+                      src={user.profileImage}
+                      alt="User Profile"
+                      className="mobile-drawer-avatar"
+                    />
+                  ) : (
+                    <div className="mobile-drawer-avatar-placeholder">
+                      <FiUser size={20} />
+                    </div>
+                  )}
+                  <div className="mobile-drawer-user-info">
+                    <div className="mobile-drawer-user-name">
+                      {user.name || user.fullName || user.firstName || user.email?.split("@")[0] || "User Account"}
+                    </div>
+                    <div className="mobile-drawer-user-sub">
+                      {t("viewAccount", "View Account & Profile →")}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="mobile-drawer-avatar-placeholder">
+                    <FiUser size={20} />
+                  </div>
+                  <div className="mobile-drawer-user-info">
+                    <div className="mobile-drawer-user-name">
+                      {t("signInRegister", "Sign In / Register")}
+                    </div>
+                    <div className="mobile-drawer-user-sub">
+                      {t("accessAccount", "Access orders & settings")}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
-          borderRadius: "50%",
+            <NavLink
+              to="/"
+              className="nav-link"
+              style={{ color: navTextColor }}
+              onClick={() => setMobileNav(false)}
+            >
+              {t("home", "Home")}
+            </NavLink>
 
-          width: "20px",
+            <NavLink
+              to="/shop"
+              className="nav-link"
+              style={{ color: navTextColor }}
+              onClick={() => setMobileNav(false)}
+            >
+              {t("shop", "Shop")}
+            </NavLink>
 
-          height: "20px",
+            <div
+              className="nav-link"
+              style={{
+                color: navTextColor,
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                setMobileNav(false);
+                if (window.location.pathname !== "/") {
+                  navigate("/");
+                  setTimeout(() => {
+                    const section = document.getElementById("categories");
+                    if (section) section.scrollIntoView({ behavior: "smooth" });
+                  }, 300);
+                } else {
+                  const section = document.getElementById("categories");
+                  if (section) section.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
+            >
+              {t("categories", "Categories")}
+            </div>
 
-          display: "flex",
+            <div
+              className="nav-link"
+              style={{
+                color: navTextColor,
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                setMobileNav(false);
+                if (window.location.pathname !== "/") {
+                  navigate("/");
+                  setTimeout(() => {
+                    const section = document.getElementById("wellness");
+                    if (section) section.scrollIntoView({ behavior: "smooth" });
+                  }, 300);
+                } else {
+                  const section = document.getElementById("wellness");
+                  if (section) section.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
+            >
+              {t("wellness", "Wellness")}
+            </div>
 
-          justifyContent: "center",
+            <NavLink
+              to="/about"
+              className="nav-link"
+              style={{ color: navTextColor }}
+              onClick={() => setMobileNav(false)}
+            >
+              {t("about", "About")}
+            </NavLink>
 
-          alignItems: "center",
+            <NavLink
+              to="/contact"
+              className="nav-link"
+              style={{ color: navTextColor }}
+              onClick={() => setMobileNav(false)}
+            >
+              {t("contact", "Contact")}
+            </NavLink>
 
-          fontSize: "11px",
+            {/* MOBILE DRAWER QUICK ACTIONS */}
+            <div className="mobile-drawer-footer">
+              <NavLink
+                to="/wishlist"
+                className="mobile-drawer-btn"
+                onClick={() => setMobileNav(false)}
+              >
+                <FiHeart size={18} /> {t("wishlist", "Wishlist")} ({wishlistCount})
+              </NavLink>
+              <NavLink
+                to="/cart"
+                className="mobile-drawer-btn primary"
+                onClick={() => setMobileNav(false)}
+              >
+                <FiShoppingCart size={18} /> {t("cart", "Cart")} ({cartCount})
+              </NavLink>
+            </div>
+          </div>
 
-          fontWeight: "700"
-        }}
-      >
-        {wishlistCount}
-      </span>
-    </div>
+          {/* RIGHT SIDE */}
+          <div className="nav-actions">
+            {/* SEARCH BAR */}
+            <HeaderSearchBar
+              navbarScrolled={navbarScrolled}
+              navTextColor={navTextColor}
+            />
 
-    {/* CART */}
-    <div
-      style={{
-        position: "relative"
-      }}
-    >
-      <NavLink to="/cart">
+            {/* WISHLIST */}
 
-        <FiShoppingCart
-          className="cart-icon"
-          style={{
-            fontSize:
-              window.innerWidth <= 768
-                ? "24px"
-                : "27px",
+            <div
+              style={{
+                position: "relative",
+                cursor: "pointer"
+              }}
+            >
+              <FiHeart
+                onClick={() =>
+                  navigate("/wishlist")
+                }
+                style={{
+                  fontSize: "24px",
+                  color: navTextColor
+                }}
+              />
 
-            color: navTextColor
-          }}
-        />
+              <span
+                style={{
+                  position: "absolute",
 
-      </NavLink>
+                  top: "-8px",
 
-      <span
-        style={{
-          position: "absolute",
+                  right: "-10px",
 
-          top: "-8px",
+                  background: "#d8ef7f",
 
-          right: "-10px",
+                  color: "#163923",
 
-          background: "#d8ef7f",
+                  borderRadius: "50%",
 
-          color: "#163923",
+                  width: "20px",
 
-          borderRadius: "50%",
+                  height: "20px",
 
-          width: "20px",
+                  display: "flex",
 
-          height: "20px",
+                  justifyContent: "center",
 
-          display: "flex",
+                  alignItems: "center",
 
-          justifyContent: "center",
+                  fontSize: "11px",
 
-          alignItems: "center",
+                  fontWeight: "700"
+                }}
+              >
+                {wishlistCount}
+              </span>
+            </div>
 
-          fontSize: "11px",
+            {/* CART */}
+            <div
+              style={{
+                position: "relative"
+              }}
+            >
+              <NavLink to="/cart">
 
-          fontWeight: "700"
-        }}
-      >
-        {cartCount}
-      </span>
-    </div>
-    {/* ADMIN BUTTON */}
+                <FiShoppingCart
+                  className="cart-icon"
+                  style={{
+                    fontSize: "25px",
+                    color: navTextColor
+                  }}
+                />
 
-{user?.isAdmin && (
+              </NavLink>
 
-  <button
+              <span
+                style={{
+                  position: "absolute",
 
-    onClick={() => navigate("/admin")}
+                  top: "-8px",
 
-    style={{
+                  right: "-10px",
 
-      padding:
-        window.innerWidth <= 768
-          ? "8px 12px"
-          : "10px 16px",
+                  background: "#d8ef7f",
 
-      borderRadius: "12px",
+                  color: "#163923",
 
-      border: "none",
+                  borderRadius: "50%",
 
-      background: "#163923",
+                  width: "20px",
 
-      color: "#fff",
+                  height: "20px",
 
-      fontWeight: "600",
+                  display: "flex",
 
-      fontSize:
-        window.innerWidth <= 768
-          ? "13px"
-          : "14px",
+                  justifyContent: "center",
 
-      cursor: "pointer",
+                  alignItems: "center",
 
-      transition: "0.3s ease"
+                  fontSize: "11px",
 
-    }}
+                  fontWeight: "700"
+                }}
+              >
+                {cartCount}
+              </span>
+            </div>
 
-  >
-    Admin
-  </button>
+            {/* ADMIN BUTTON */}
+            {user?.isAdmin && (
 
-)}
+              <button
 
-    {/* USER */}
-    <div
-      style={{
-        position: "relative"
-      }}
-    >
+                onClick={() => navigate("/admin")}
 
-      <FiUser
-        onClick={(e) => {
+                className="nav-admin-btn"
 
-          e.stopPropagation();
+              >
+                Admin
+              </button>
 
-          if (user) {
-            setShowMenu(!showMenu);
-          } else {
-            setShowAuth(true);
-          }
+            )}
 
-        }}
+            {/* USER PROFILE / LOGIN */}
+            <div
+              className="header-user-profile-wrapper"
+              style={{
+                position: "relative"
+              }}
+            >
+              {user ? (
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate("/account");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "6px 14px",
+                    borderRadius: "999px",
+                    background: navbarScrolled ? "rgba(255,255,255,0.18)" : "rgba(22, 57, 35, 0.08)",
+                    border: navbarScrolled ? "1px solid rgba(255,255,255,0.3)" : "1px solid rgba(22, 57, 35, 0.15)",
+                    color: navTextColor,
+                    cursor: "pointer",
+                    transition: "all 0.25s ease"
+                  }}
+                >
+                  {user.profileImage ? (
+                    <img
+                      src={user.profileImage}
+                      alt="avatar"
+                      style={{
+                        width: "22px",
+                        height: "22px",
+                        borderRadius: "50%",
+                        objectFit: "cover"
+                      }}
+                    />
+                  ) : (
+                    <FiUser style={{ fontSize: "18px" }} />
+                  )}
+                  <span style={{ fontSize: "14px", fontWeight: "700", whiteSpace: "nowrap" }}>
+                    {(user.name || user.fullName || user.firstName || user.email?.split("@")[0] || "Account").trim().split(" ")[0]}
+                  </span>
+                </div>
+              ) : (
+                <FiUser
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowAuth(true);
+                  }}
+                  style={{
+                    fontSize: "25px",
+                    color: navTextColor,
+                    cursor: "pointer"
+                  }}
+                />
+              )}
+            </div>
 
-        style={{
-          fontSize:
-            window.innerWidth <= 768
-              ? "24px"
-              : "26px",
+            {/* MOBILE MENU BUTTON */}
+            <div
+              className={`mobile-menu-btn ${mobileNav ? "open" : ""}`}
+              onClick={() =>
+                setMobileNav(!mobileNav)
+              }
+            >
+              <span style={{ background: mobileNav ? "var(--accent)" : navTextColor }} />
+              <span style={{ background: mobileNav ? "var(--accent)" : navTextColor }} />
+              <span style={{ background: mobileNav ? "var(--accent)" : navTextColor }} />
+            </div>
 
-          color: navTextColor,
+          </div>
 
-          cursor: "pointer"
-        }}
-      />
-      {showMenu && (
-  <AccountPanel
-    user={user}
-    lastOrder={lastOrder}
-    setShowMenu={setShowMenu}
-  />
-)}
+        </div>
 
-     
-
-    </div>
-
-    {/* MOBILE MENU BUTTON */}
-    <div
-      className="mobile-menu-btn"
-
-      onClick={() =>
-        setMobileNav(!mobileNav)
-      }
-    >
-      <span />
-      <span />
-      <span />
-    </div>
-
-  </div>
-
-</div>
-
-</nav>  
-<div
-  style={{
-    height:
-      window.innerWidth <= 768
-        ? "82px"
-        : "150px"
-  }}
-/>
-<div style={{ height: "12px" }} />
+        </nav>
+      )}
+      {!isAdminRoute && <div className="nav-spacer" />}
 
       <Routes>
-  <Route path="/" element={<Home />} />
-  <Route path="/register" element={<Register />} />
-  <Route path="/login" element={<Login />} />
-  <Route
-  path="/admin"
-  element={
-    <ProtectedRoute>
-      <Admin />
-    </ProtectedRoute>
-  }
-/>
-  <Route path="/shop" element={<Shop />} />
-  <Route
-  path="/product-details"
-  element={<ProductDetails />}
-/>
-<Route
-  path="/cart"
-  element={<Cart />}
-/>
-<Route
-  path="/checkout"
-  element={<Checkout />}
-/>
-<Route path="/order-success" element={<OrderSuccess />} />
-<Route path="/my-orders" element={<MyOrders />} />
-<Route path="/wishlist" element={<Wishlist />} />
-<Route path="/forgot-password" element={<ForgotPassword />} />
-</Routes>
-
-  
-   <footer className="earth-footer">
-
-  <div className="container">
-
-    <div className="footer-grid">
-
-      {/* BRAND */}
-      <div>
-
-        <img
-          src={logo}
-          alt="Earthkind Naturals"
-
-          style={{
-            width: "190px",
-
-            marginBottom: "26px",
-
-            filter:
-              "brightness(0) invert(1)"
-          }}
+        <Route path="/" element={<Home />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute adminOnly>
+              <Admin />
+            </ProtectedRoute>
+          }
         />
+        <Route path="/shop" element={<Shop />} />
+        <Route
+          path="/product-details"
+          element={<ProductDetails />}
+        />
+        <Route
+          path="/cart"
+          element={<Cart />}
+        />
+        <Route
+          path="/checkout"
+          element={<Checkout />}
+        />
+        <Route path="/order-success" element={<OrderSuccess />} />
+        <Route path="/my-orders" element={<MyOrders />} />
+        <Route path="/account" element={<Account />} />
+        <Route path="/profile" element={<Account />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/pure-herbal-powders" element={<HerbalPowders />} />
+        <Route path="/category/herbal-powders" element={<HerbalPowders />} />
+      </Routes>
 
-        <p className="footer-text">
-          Premium herbal wellness
-          products crafted with
-          nature-inspired ingredients
-          designed for healthy,
-          mindful modern living.
-        </p>
 
-      </div>
+      <footer className="earth-footer">
 
-     {/* LINKS */}
-<div>
+        <div className="container">
 
-  <h3 className="footer-title">
-    Quick Links
-  </h3>
+          <div className="footer-grid">
 
-  {/* HOME */}
-  <div
-    className="footer-link"
-    style={{ cursor: "pointer" }}
-    onClick={() => {
+            {/* BRAND */}
+            <div>
 
-  navigate("/");
+              <img
+                src={logo}
+                alt="Earthkind Naturals"
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
+                style={{
+                  width: "190px",
 
-}}
-  >
-    Home
-  </div>
+                  marginBottom: "26px",
 
-  {/* SHOP */}
-  <div
-    className="footer-link"
-    style={{ cursor: "pointer" }}
-    onClick={() => navigate("/shop")}
-  >
-    Shop
-  </div>
+                  filter:
+                    "brightness(0) invert(1)"
+                }}
+              />
 
-  {/* CATEGORIES */}
-  <div
-    className="footer-link"
-    style={{ cursor: "pointer" }}
-    onClick={() => {
+              <p className="footer-text">
+                Premium herbal wellness
+                products crafted with
+                nature-inspired ingredients
+                designed for healthy,
+                mindful modern living.
+              </p>
 
-      if (window.location.pathname !== "/") {
+              <div className="footer-social-wrapper">
+                <span className="footer-social-heading">Follow Us</span>
+                <div className="footer-social-links">
+                  <a
+                    href="https://instagram.com/earthkind_naturals"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="footer-social-btn instagram"
+                    aria-label="Instagram"
+                    title="Instagram (@earthkind_naturals)"
+                  >
+                    <FaInstagram />
+                  </a>
+                  <a
+                    href="https://facebook.com/earthkindnaturals"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="footer-social-btn facebook"
+                    aria-label="Facebook"
+                    title="Facebook"
+                  >
+                    <FaFacebookF />
+                  </a>
+                  <a
+                    href="https://wa.me/919027186252"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="footer-social-btn whatsapp"
+                    aria-label="WhatsApp"
+                    title="WhatsApp"
+                  >
+                    <FaWhatsapp />
+                  </a>
+                  <a
+                    href="https://pinterest.com/earthkindnaturals"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="footer-social-btn pinterest"
+                    aria-label="Pinterest"
+                    title="Pinterest"
+                  >
+                    <FaPinterestP />
+                  </a>
+                  <a
+                    href="https://youtube.com/@earthkindnaturals"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="footer-social-btn youtube"
+                    aria-label="YouTube"
+                    title="YouTube"
+                  >
+                    <FaYoutube />
+                  </a>
+                </div>
+              </div>
 
-        navigate("/");
+            </div>
 
-        setTimeout(() => {
+            {/* LINKS */}
+            <div>
 
-          const section =
-            document.getElementById("categories");
+              <h3 className="footer-title">
+                Quick Links
+              </h3>
 
-          if (section) {
-            section.scrollIntoView({
-              behavior: "smooth",
-            });
-          }
+              {/* HOME */}
+              <div
+                className="footer-link"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
 
-        }, 300);
+                  navigate("/");
 
-      } else {
+                  window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                  });
 
-        const section =
-          document.getElementById("categories");
+                }}
+              >
+                Home
+              </div>
 
-        if (section) {
-          section.scrollIntoView({
-            behavior: "smooth",
-          });
-        }
+              {/* SHOP */}
+              <div
+                className="footer-link"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  navigate("/shop");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
+                Shop
+              </div>
 
-      }
+              {/* MY ORDERS / TRACK ORDER */}
+              <div
+                className="footer-link"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  navigate("/my-orders");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
+                My Orders 📦
+              </div>
 
-    }}
-  >
-    Categories
-  </div>
+              {/* CATEGORIES */}
+              <div
+                className="footer-link"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
 
-  {/* ABOUT */}
-  <div
-    className="footer-link"
-    style={{ cursor: "pointer" }}
-    onClick={() => {
+                  if (window.location.pathname !== "/") {
 
-      if (window.location.pathname !== "/") {
+                    navigate("/");
 
-        navigate("/");
+                    setTimeout(() => {
 
-        setTimeout(() => {
+                      const section =
+                        document.getElementById("categories");
 
-          const section =
-            document.getElementById("about");
+                      if (section) {
+                        section.scrollIntoView({
+                          behavior: "smooth",
+                        });
+                      }
 
-          if (section) {
-            section.scrollIntoView({
-              behavior: "smooth",
-            });
-          }
+                    }, 300);
 
-        }, 300);
+                  } else {
 
-      } else {
+                    const section =
+                      document.getElementById("categories");
 
-        const section =
-          document.getElementById("about");
+                    if (section) {
+                      section.scrollIntoView({
+                        behavior: "smooth",
+                      });
+                    }
 
-        if (section) {
-          section.scrollIntoView({
-            behavior: "smooth",
-          });
-        }
+                  }
 
-      }
+                }}
+              >
+                Categories
+              </div>
 
-    }}
-  >
-    About
-  </div>
+              {/* ABOUT */}
+              <div
+                className="footer-link"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  navigate("/about");
+                  window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                  });
+                }}
+              >
+                About Us
+              </div>
 
-</div>
-     {/* CONTACT */}
-<div>
+              {/* CONTACT US */}
+              <div
+                className="footer-link"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  navigate("/contact");
+                  window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                  });
+                }}
+              >
+                Contact Us
+              </div>
 
-  <h3 className="footer-title">
-    Contact
-  </h3>
+            </div>
+            {/* WELLNESS */}
+            <div>
 
-  {/* EMAIL */}
-  <a
-    href="mailto:support@earthkindnaturals.com"
-    className="footer-text"
-    style={{
-      display: "block",
-      textDecoration: "none",
-      color: "#fff",
-      transition: "0.3s ease",
-    }}
-  >
-    support@earthkindnaturals.com
-  </a>
+              <h3 className="footer-title">
+                Wellness
+              </h3>
 
-  {/* PHONE */}
-  <a
-    href="tel:+919027186252"
-    className="footer-text"
-    style={{
-      display: "block",
-      marginTop: "12px",
-      textDecoration: "none",
-      color: "#fff",
-      transition: "0.3s ease",
-    }}
-  >
-    +91 9027186252
-  </a>
+              {/* HERBAL POWDERS */}
+              <p
+                className="footer-text"
+                onClick={() => {
+                  navigate("/pure-herbal-powders");
+                  window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                  });
+                }}
 
-  {/* INSTAGRAM */}
-  <a
-    href="https://instagram.com/earthkind_naturals"
-    target="_blank"
-    rel="noreferrer"
-    className="footer-text"
-    style={{
-      display: "block",
-      marginTop: "12px",
-      textDecoration: "none",
-      color: "#fff",
-      transition: "0.3s ease",
-    }}
-  >
-    Instagram: @earthkind_naturals
-  </a>
+                style={{
+                  cursor: "pointer"
+                }}
+              >
+                Pure Herbal Powders
+              </p>
 
-</div>
-{/* WELLNESS */}
-<div>
+              {/* SEEDS */}
+              <p
+                className="footer-text"
 
-  <h3 className="footer-title">
-    Wellness
-  </h3>
+                onClick={() =>
+                  navigate("/shop", {
+                    state: {
+                      selectedCategory: "Natural Seeds"
+                    }
+                  })
+                }
 
-  {/* HERBAL POWDERS */}
-  <p
-    className="footer-text"
-    onClick={() =>
-      navigate("/shop", {
-        state: {
-          selectedCategory: "Herbal Powders"
-        }
-      })
-    }
+                style={{
+                  marginTop: "12px",
+                  cursor: "pointer"
+                }}
+              >
+                Premium Seeds
+              </p>
 
-    style={{
-      cursor: "pointer"
-    }}
-  >
-    Pure Herbal Powders
-  </p>
+              {/* DRY FRUITS */}
+              <p
+                className="footer-text"
 
-  {/* SEEDS */}
-  <p
-    className="footer-text"
+                onClick={() =>
+                  navigate("/shop", {
+                    state: {
+                      selectedCategory: "Nuts & Dry Fruits"
+                    }
+                  })
+                }
 
-    onClick={() =>
-      navigate("/shop", {
-        state: {
-          selectedCategory: "Natural Seeds"
-        }
-      })
-    }
+                style={{
+                  marginTop: "12px",
+                  cursor: "pointer"
+                }}
+              >
+                Luxury Dry Fruits
+              </p>
 
-    style={{
-      marginTop: "12px",
-      cursor: "pointer"
-    }}
-  >
-    Premium Seeds
-  </p>
+              {/* HERBAL TEA */}
+              <p
+                className="footer-text"
 
-  {/* DRY FRUITS */}
-  <p
-    className="footer-text"
+                onClick={() =>
+                  navigate("/shop", {
+                    state: {
+                      selectedCategory: "Herbal Tea"
+                    }
+                  })
+                }
 
-    onClick={() =>
-      navigate("/shop", {
-        state: {
-          selectedCategory: "Nuts & Dry Fruits"
-        }
-      })
-    }
+                style={{
+                  marginTop: "12px",
+                  cursor: "pointer"
+                }}
+              >
+                Wellness Blends
+              </p>
 
-    style={{
-      marginTop: "12px",
-      cursor: "pointer"
-    }}
-  >
-    Luxury Dry Fruits
-  </p>
+            </div>
 
-  {/* HERBAL TEA */}
-  <p
-    className="footer-text"
+            {/* CONTACT */}
+            <div>
 
-    onClick={() =>
-      navigate("/shop", {
-        state: {
-          selectedCategory: "Herbal Tea"
-        }
-      })
-    }
+              <h3 className="footer-title">
+                Contact
+              </h3>
 
-    style={{
-      marginTop: "12px",
-      cursor: "pointer"
-    }}
-  >
-    Wellness Blends
-  </p>
+              {/* EMAIL */}
+              <a
+                href="mailto:support@earthkindnaturals.com"
+                className="footer-text"
+                style={{
+                  display: "block",
+                  textDecoration: "none",
+                  color: "#fff",
+                  transition: "0.3s ease",
+                  wordBreak: "break-word",
+                  overflowWrap: "break-word",
+                }}
+              >
+                support@earthkindnaturals.com
+              </a>
 
-</div>
-    </div>
+              {/* PHONE */}
+              <a
+                href="tel:+919027186252"
+                className="footer-text"
+                style={{
+                  display: "block",
+                  marginTop: "12px",
+                  textDecoration: "none",
+                  color: "#fff",
+                  transition: "0.3s ease",
+                }}
+              >
+                +91 9027186252
+              </a>
 
-    <div className="footer-bottom">
+            </div>
+          </div>
 
-      © 2026 EARTHKIND NATURALS —
-      Crafted With Nature 🌿
+          <div className="footer-bottom">
 
-    </div>
+            © 2026 EARTHKIND NATURALS —
+            Crafted With Nature 🌿
 
-  </div>
+          </div>
 
-</footer>
-<ToastContainer position="top-right" autoClose={2000} />
+        </div>
 
-<Toaster
-  position="top-right"
-  reverseOrder={false}
-/>
+      </footer>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        style={{ top: "90px" }}
+      />
 
-{showAuth && (
-  <AuthModal close={() => setShowAuth(false)} />
-)}
-   </> 
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+        containerStyle={{
+          top: 90,
+          right: 20
+        }}
+      />
+
+      {showAuth && (
+        <AuthModal close={() => setShowAuth(false)} />
+      )}
+
+      {/* FLOATING REAL-TIME LIVE CHAT WIDGET */}
+      <LiveChatWidget />
+    </>
   );
-  
+
 }
 const itemStyle = {
   padding: "6px 8px",

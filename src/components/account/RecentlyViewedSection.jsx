@@ -56,306 +56,119 @@ function RecentlyViewedSection({
     };
 
   return (
-
-    <div>
-
+    <div className="rv-container">
       {/* HEADER */}
-
       <h2
         style={{
           color: "#123524",
-          marginBottom: "6px"
+          fontSize: "26px",
+          fontWeight: "800",
+          marginBottom: "4px"
         }}
       >
-        👀 Recently Viewed Products
-        ({products.length})
+        👀 Recently Viewed Products ({products.length})
       </h2>
 
       <p
         style={{
           color: "#777",
-          marginBottom: "18px"
+          marginBottom: "18px",
+          fontSize: "14px"
         }}
       >
         Continue where you left off
       </p>
 
       {/* EMPTY STATE */}
-
       {products.length === 0 && (
-
         <div
           style={{
             background: "#fff",
-            borderRadius: "28px",
-            padding: "70px 30px",
+            borderRadius: "24px",
+            padding: "60px 20px",
             textAlign: "center",
-            border:
-              "1px solid #eef2ef"
+            border: "1px solid #eef2ef"
           }}
         >
-
-          <div
-            style={{
-              fontSize: "70px"
-            }}
-          >
-            👀
-          </div>
-
-          <h2
-            style={{
-              color: "#123524",
-              marginTop: "15px"
-            }}
-          >
+          <div style={{ fontSize: "60px" }}>👀</div>
+          <h2 style={{ color: "#123524", marginTop: "14px", fontSize: "20px" }}>
             No Recently Viewed Products
           </h2>
-
           <p
             style={{
               color: "#777",
               maxWidth: "350px",
-              margin: "0 auto",
-              lineHeight: "1.6"
+              margin: "8px auto 0",
+              lineHeight: "1.6",
+              fontSize: "13px"
             }}
           >
-            Products you explore will
-            automatically appear here.
+            Products you explore will automatically appear here.
           </p>
-
         </div>
-
       )}
 
       {/* SCROLLABLE PRODUCT LIST */}
-
       {products.length > 0 && (
+        <div className="rv-grid">
+          {products.map((product) => (
+            <div key={product._id} className="rv-card">
+              {/* LEFT */}
+              <div className="rv-card-left">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="rv-card-img"
+                />
 
-        <div
-          style={{
-            display: "grid",
-            gap: "14px",
+                <div className="rv-card-info">
+                  <h3 className="rv-card-title">
+                    {product.name}
+                  </h3>
 
-            maxHeight: "500px",
-            overflowY: "auto",
-
-            paddingRight: "5px"
-          }}
-        >
-
-          {products.map(
-            (product) => (
-
-              <div
-                key={product._id}
-
-                style={{
-                  background:
-                    "linear-gradient(180deg,#ffffff,#f8faf8)",
-
-                  borderRadius: "22px",
-
-                  padding: "16px",
-
-                  display: "flex",
-
-                  alignItems: "center",
-
-                  justifyContent:
-                    "space-between",
-
-                  gap: "14px",
-
-                  border:
-                    "1px solid #eef2ef",
-
-                  boxShadow:
-                    "0 10px 30px rgba(0,0,0,0.05)"
-                }}
-              >
-
-                {/* LEFT */}
-
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                    flex: 1
-                  }}
-                >
-
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    style={{
-                      width: "80px",
-                      height: "80px",
-                      objectFit:
-                        "contain",
-
-                      background:
-                        "#fff",
-
-                      borderRadius:
-                        "16px",
-
-                      padding: "8px",
-
-                      border:
-                        "1px solid #eef2ef"
-                    }}
-                  />
-
-                  <div>
-
-                    <h3
-                      style={{
-                        margin: 0,
-                        color:
-                          "#123524"
-                      }}
-                    >
-                      {product.name}
-                    </h3>
-
-                    <p
-                      style={{
-                        margin:
-                          "5px 0",
-                        color:
-                          "#777"
-                      }}
-                    >
-                      ₹{product.price}
-                    </p>
-
-                    <p
-                      style={{
-                        margin: 0,
-
-                        fontSize:
-                          "13px",
-
-                        color:
-                          "#999"
-                      }}
-                    >
-                      {product.category ||
-                        "Herbal Product"}
-                    </p>
-
+                  <div className="rv-card-price">
+                    ₹{product.price}
                   </div>
 
+                  <p className="rv-card-cat">
+                    {product.category || "Herbal Product"}
+                  </p>
                 </div>
-
-                {/* RIGHT ACTIONS */}
-
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "10px"
-                  }}
-                >
-
-                  <button
-                   onClick={() => {
-
-  if (setShowMenu) {
-    setShowMenu(false);
-  }
-
-  navigate(
-    "/product-details",
-    {
-      state: {
-        product
-      }
-    }
-  );
-
-}}
-
-                    style={{
-                      border: "none",
-
-                      background:
-                        "#123524",
-
-                      color:
-                        "#fff",
-
-                      padding:
-                        "10px 16px",
-
-                      borderRadius:
-                        "12px",
-
-                      cursor:
-                        "pointer",
-
-                      display:
-                        "flex",
-
-                      alignItems:
-                        "center",
-
-                      gap: "6px",
-
-                      fontWeight:
-                        "600"
-                    }}
-                  >
-                    View Again
-                    <FiArrowRight />
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      removeProduct(
-                        product._id
-                      )
-                    }
-
-                    style={{
-                      border: "none",
-
-                      background:
-                        "#fff5f5",
-
-                      color:
-                        "#ef4444",
-
-                      width: "42px",
-
-                      height: "42px",
-
-                      borderRadius:
-                        "12px",
-
-                      cursor:
-                        "pointer"
-                    }}
-                  >
-                    <FiTrash2 />
-                  </button>
-
-                </div>
-
               </div>
 
-            )
-          )}
+              {/* RIGHT ACTIONS */}
+              <div className="rv-card-actions">
+                <button
+                  type="button"
+                  className="rv-view-btn"
+                  onClick={() => {
+                    if (setShowMenu) {
+                      setShowMenu(false);
+                    }
+                    navigate("/product-details", {
+                      state: { product }
+                    });
+                  }}
+                >
+                  View Again
+                  <FiArrowRight />
+                </button>
 
+                <button
+                  type="button"
+                  className="rv-delete-btn"
+                  onClick={() => removeProduct(product._id)}
+                  title="Remove from recently viewed"
+                >
+                  <FiTrash2 size={18} />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
-
       )}
-
     </div>
-
   );
-
 }
 
 export default RecentlyViewedSection;

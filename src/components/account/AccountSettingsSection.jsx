@@ -2,6 +2,9 @@ import React, {
   useState,
   useEffect
 } from "react";
+import toast from "react-hot-toast";
+import { setLanguage } from "../../utils/translations";
+import { useTranslation } from "../../utils/useTranslation";
 
 function AccountSettingsSection() {
 
@@ -107,24 +110,11 @@ const toggleCommunication =
     });
 
   };
-   const saveShoppingPreferences =
-() => {
-
-  localStorage.setItem(
-
-    "shoppingPreferences",
-
-    JSON.stringify(
-      shoppingPrefs
-    )
-
-  );
-
-  alert(
-    "Preferences Saved Successfully ✓"
-  );
-
-};
+   const saveShoppingPreferences = () => {
+    localStorage.setItem("shoppingPreferences", JSON.stringify(shoppingPrefs));
+    setLanguage(shoppingPrefs.language);
+    toast.success("Preferences Saved Successfully! 🌐");
+  };
 
   const [shoppingPrefs, setShoppingPrefs] =
 useState({
@@ -266,94 +256,34 @@ const statistics = {
   ];
 
   return (
-
-    <div>
-
+    <div className="account-settings-container">
       <h2
         style={{
           color: "#123524",
+          fontSize: "28px",
+          fontWeight: "800",
           marginBottom: "18px"
         }}
       >
         Account Settings
       </h2>
 
-      <div
-        style={{
-          display: "grid",
-        gridTemplateColumns:
- "165px 1fr",
-          gap: "16px"
-        }}
-      >
-
-        {/* LEFT MENU */}
-
-        <div
-         style={{
-  background: "#fff",
-  borderRadius: "22px",
-  border: "1px solid #eef2ef",
-  padding: "20px",
-  minHeight: "380px",
-  maxHeight: "470px",
-  overflow: "hidden"
-}}
-        >
-
-          {menuItems.map(
-            (item) => (
-
-              <div
-                key={item.id}
-
-                onClick={() =>
-                  setActiveSection(
-                    item.id
-                  )
-                }
-
-                style={{
-  padding: "8px 10px",
-  marginBottom: "6px",
-  borderRadius: "12px",
-  cursor: "pointer",
-  fontSize: "14px",
-  lineHeight: "18px",
-  fontWeight:
-    activeSection === item.id
-      ? "600"
-      : "500",
-  background:
-    activeSection === item.id
-      ? "#123524"
-      : "transparent",
-  color:
-    activeSection === item.id
-      ? "#fff"
-      : "#333"
-}}
-              >
-                {item.label}
-              </div>
-
-            )
-          )}
-
+      <div className="account-settings-layout">
+        {/* TOP / SIDEBAR MENU */}
+        <div className="account-settings-sidebar">
+          {menuItems.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => setActiveSection(item.id)}
+              className={`account-settings-tab ${activeSection === item.id ? "active" : ""}`}
+            >
+              {item.label}
+            </div>
+          ))}
         </div>
 
-        {/* RIGHT CONTENT */}
-
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: "22px",
-            border:
-              "1px solid #eef2ef",
-            padding: "20px",
-            minHeight: "380px"
-          }}
-        >
+        {/* CONTENT PANEL */}
+        <div className="account-settings-panel">
 
           
 
@@ -495,39 +425,28 @@ Language
 </label>
 
 <select
-value={shoppingPrefs.language}
-
-onChange={(e) =>
-setShoppingPrefs({
-...shoppingPrefs,
-language:
-e.target.value
-})
-}
-
-style={{
-width: "100%",
-padding: "12px",
-borderRadius: "12px",
-border:
-"1px solid #dfe7df"
-}}
+  value={shoppingPrefs.language}
+  onChange={(e) => {
+    const newLang = e.target.value;
+    const updated = { ...shoppingPrefs, language: newLang };
+    setShoppingPrefs(updated);
+    localStorage.setItem("shoppingPreferences", JSON.stringify(updated));
+    setLanguage(newLang);
+    toast.success(`Language updated to ${newLang}! 🌐`);
+  }}
+  style={{
+    width: "100%",
+    padding: "12px",
+    borderRadius: "12px",
+    border: "1px solid #dfe7df",
+    fontWeight: "600"
+  }}
 >
-
-<option>English</option>
-<option>Spanish</option>
-<option>French</option>
-<option>German</option>
-<option>Portuguese</option>
-<option>Italian</option>
-<option>Dutch</option>
-<option>Arabic</option>
-<option>Chinese</option>
-<option>Japanese</option>
-<option>Korean</option>
-<option>Russian</option>
-<option>Turkish</option>
-
+  <option value="English">English</option>
+  <option value="Hindi">Hindi (हिंदी)</option>
+  <option value="Spanish">Spanish</option>
+  <option value="French">French</option>
+  <option value="German">German</option>
 </select>
 
 </div>
@@ -972,16 +891,7 @@ Logout From All Devices
   Account Statistics
 </h3>
 
-<div
-  style={{
-    display: "grid",
-
-    gridTemplateColumns:
-  "repeat(2,1fr)",
-
-    gap: "8px"
-  }}
->
+<div className="account-stats-grid">
 
   <StatCard
     title="Orders"

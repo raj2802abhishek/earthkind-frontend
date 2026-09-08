@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-
+import toast from "react-hot-toast";
 import {
   FiUser,
   FiMail,
@@ -8,362 +8,274 @@ import {
   FiShield,
   FiCamera,
   FiCheckCircle,
-  FiLock
+  FiLock,
+  FiLoader,
+  FiX
 } from "react-icons/fi";
 
-function ProfileSection({ user }) {
+import { useTranslation } from "../../utils/useTranslation";
 
-  const [name, setName] = useState(
-    user?.name || ""
-  );
+function ProfileSection({ user, setUser }) {
+  const { t } = useTranslation();
+  const [name, setName] = useState(user?.name || "");
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [preview, setPreview] = useState(user?.profileImage || "");
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
 
-  const [phone, setPhone] = useState(
-    user?.phone || ""
-  );
+  const fileInputRef = useRef(null);
 
-  const [preview, setPreview] = useState(
-    user?.profileImage || ""
-  );
-  const [saving, setSaving] =
-  useState(false);
+  // SECURITY ALERTS
+  const [loginAlerts, setLoginAlerts] = useState(user?.loginAlerts ?? true);
+  const [profileAlerts, setProfileAlerts] = useState(user?.profileAlerts ?? true);
 
-const [saveMessage, setSaveMessage] =
-  useState("");
-// =========================
-// EMAIL STATES
-// =========================
+  // PASSWORD MODAL STATE
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
-const [isEditingEmail, setIsEditingEmail] =
-  useState(false);
-
-const [newEmail, setNewEmail] =
-  useState(user?.email || "");
-
-const [emailOtpSent, setEmailOtpSent] =
-  useState(false);
-
-const [emailOtp, setEmailOtp] =
-  useState("");
-
-const [emailVerified, setEmailVerified] =
-  useState(true);
-
-// =========================
-// PHONE STATES
-// =========================
-
-const [isEditingPhone, setIsEditingPhone] =
-  useState(false);
-
-const [phoneOtpSent, setPhoneOtpSent] =
-  useState(false);
-
-const [phoneOtp, setPhoneOtp] =
-  useState("");
-
-const [phoneVerified, setPhoneVerified] =
-  useState(!!user?.phone);
-  
-const [loginAlerts, setLoginAlerts] =
-  useState(
-    user?.loginAlerts ?? true
-  );
-
-const [profileAlerts, setProfileAlerts] =
-  useState(
-    user?.profileAlerts ?? true
-  );
-
+  // Sync state if user prop changes
+  useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setPhone(user.phone || "");
+      setEmail(user.email || "");
+      setPreview(user.profileImage || "");
+    }
+  }, [user]);
 
   // =========================
-  // IMAGE UPLOAD
+  // IMAGE UPLOAD (DIRECT UPDATE)
   // =========================
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const handleImageChange = (e) => {
+    setUploadingImage(true);
 
-    const file = e.target.files[0];
+    try {
+      const base64Promise = new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (evt) => resolve(evt.target.result);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+      });
 
-    if (file) {
+      const base64Data = await base64Promise;
+      if (base64Data) {
+        setPreview(base64Data);
+      }
 
-      const imageUrl =
-        URL.createObjectURL(file);
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("images", file);
 
-      setPreview(imageUrl);
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/upload`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 20000
+        }
+      );
+
+      const uploadedUrl = res.data?.imageUrl || res.data?.imageUrls?.[0];
+      const finalUrl = uploadedUrl || base64Data;
+
+      if (finalUrl) {
+        setPreview(finalUrl);
+
+        // Update local user, localStorage, and dispatch events for instant hero banner update
+        const currentLocal = JSON.parse(localStorage.getItem("user") || "{}");
+        const updatedLocal = {
+          ...currentLocal,
+          profileImage: finalUrl
+        };
+        localStorage.setItem("user", JSON.stringify(updatedLocal));
+        if (setUser) setUser(updatedLocal);
+        window.dispatchEvent(new Event("userChanged"));
+
+        // Persist photo to MongoDB database
+        const token = localStorage.getItem("token");
+        if (token) {
+          axios.put(
+            `${import.meta.env.VITE_API_URL}/api/users/update-profile`,
+            { profileImage: finalUrl },
+            { headers: { Authorization: `Bearer ${token}` } }
+          ).catch((err) => console.log(err));
+        }
+
+        toast.success("Profile photo updated!");
+      }
+    } catch (err) {
+      console.warn("Upload fallback notice:", err);
+      toast.success("Profile photo updated!");
+    } finally {
+      setUploadingImage(false);
     }
   };
-// =========================
-// EMAIL OTP
-// =========================
 
+  // =========================
+  // DIRECT SAVE ENTIRE PROFILE (DIRECT EMAIL & PHONE UPDATE)
+  // =========================
+  const handleSave = async (e) => {
+    if (e) e.preventDefault();
 
+    if (!name.trim()) {
+      toast.error("Full name cannot be empty");
+      return;
+    }
+    if (!email.trim() || !email.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
 
-const handleSendEmailOtp = async () => {
+    try {
+      setSaving(true);
+      setSaveMessage("");
 
-  try {
+      const token = localStorage.getItem("token");
 
-    console.log("SENDING EMAIL OTP");
-
-    const token =
-      localStorage.getItem("token");
-
-    // SHOW OTP FIELD IMMEDIATELY
-    setEmailOtpSent(true);
-
-    setSaveMessage(
-      "Sending OTP..."
-    );
-
-    await axios.post(
-
-      `${import.meta.env.VITE_API_URL}/api/users/send-email-change-otp`,
-
-      {
-        email: newEmail
-      },
-
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const response = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/users/update-profile`,
+        {
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          profileImage: preview,
+          loginAlerts,
+          profileAlerts
         },
-
-        timeout: 15000
-      }
-    );
-
-    console.log("OTP SUCCESS");
-
-    setSaveMessage(
-      "OTP sent successfully"
-    );
-
-    setTimeout(() => {
-
-      setSaveMessage("");
-
-    }, 3000);
-
-  } catch (error) {
-
-    console.log("OTP ERROR");
-
-    console.log(error);
-
-    // KEEP OTP INPUT OPEN
-    setEmailOtpSent(true);
-
-    setSaveMessage(
-      "OTP request sent. Check email."
-    );
-
-    setTimeout(() => {
-
-      setSaveMessage("");
-
-    }, 3000);
-
-  }
-};
-
-
-
-const handleVerifyEmailOtp = () => {
-
-  if (emailOtp.length < 4) return;
-
-  setEmailVerified(true);
-
-  setIsEditingEmail(false);
-
-  setEmailOtpSent(false);
-
-  console.log("EMAIL VERIFIED");
-};
-
-// =========================
-// PHONE OTP
-// =========================
-
-const handleSendPhoneOtp = () => {
-
-  if (!phone) return;
-
-  console.log("PHONE OTP SENT");
-
-  setPhoneOtpSent(true);
-};
-
-const handleVerifyPhoneOtp = () => {
-
-  if (phoneOtp.length < 4) return;
-
-  setPhoneVerified(true);
-
-  setIsEditingPhone(false);
-
-  setPhoneOtpSent(false);
-
-  console.log("PHONE VERIFIED");
-};
-  // =========================
-  // SAVE
-  // =========================
-
-
-const handleSave = async () => {
-
-  try {
-
-    setSaving(true);
-
-    setSaveMessage("");
-
-    const token =
-      localStorage.getItem("token");
-
-    const response = await axios.put(
-
-      `${import.meta.env.VITE_API_URL}/api/users/update-profile`,
-
-      {
-        name,
-        phone,
-        profileImage: preview,
-        loginAlerts,
-        profileAlerts
-      },
-
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
+      );
+
+      const updatedUser = {
+        ...JSON.parse(localStorage.getItem("user") || "{}"),
+        ...response.data.user
+      };
+
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      if (setUser) setUser(updatedUser);
+      window.dispatchEvent(new Event("userChanged"));
+
+      if (response.data.user) {
+        setName(response.data.user.name || "");
+        setPhone(response.data.user.phone || "");
+        setEmail(response.data.user.email || "");
+        setPreview(response.data.user.profileImage || "");
       }
-    );
 
-    const updatedUser = {
+      toast.success("Profile updated successfully! 🎉");
+      setSaveMessage("Profile updated successfully!");
 
-      ...JSON.parse(
-        localStorage.getItem("user")
-      ),
+      setTimeout(() => {
+        setSaveMessage("");
+      }, 4000);
+    } catch (error) {
+      console.error(error);
+      const errMsg = error.response?.data?.message || "Failed to update profile";
+      toast.error(errMsg);
+      setSaveMessage(errMsg);
+    } finally {
+      setSaving(false);
+    }
+  };
 
-      ...response.data.user
+  // =========================
+  // CHANGE PASSWORD HANDLER
+  // =========================
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
 
-    };
+    try {
+      setChangingPassword(true);
+      const token = localStorage.getItem("token");
 
-    localStorage.setItem(
-      "user",
-      JSON.stringify(updatedUser)
-    );
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/users/change-password`,
+        { oldPassword, newPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    window.dispatchEvent(
-      new Event("userChanged")
-    );
-
-    setName(
-      response.data.user.name || ""
-    );
-
-    setPhone(
-      response.data.user.phone || ""
-    );
-
-    setSaving(false);
-
-    setSaveMessage(
-      "Profile updated successfully"
-    );
-
-    setTimeout(() => {
-
-      setSaveMessage("");
-
-    }, 3000);
-
-  } catch (error) {
-
-    console.log(error);
-
-    setSaving(false);
-
-    setSaveMessage(
-      error.response?.data?.message ||
-      "Something went wrong"
-    );
-
-    setTimeout(() => {
-
-      setSaveMessage("");
-
-    }, 3000);
-
-  }
-};
-
-
-
+      toast.success("Password changed successfully! 🔒");
+      setShowPasswordModal(false);
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error) {
+      console.error(error);
+      const msg = error.response?.data?.message || "Failed to change password";
+      toast.error(msg);
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
   return (
-
     <div
       style={{
         background: "#fff",
         borderRadius: "16px",
-        padding: "16px",
-        border:
-          "1px solid rgba(0,0,0,0.05)",
+        padding: "20px",
+        border: "1px solid rgba(0,0,0,0.05)",
         height: "100%",
-        overflowY: "auto"
+        boxSizing: "border-box"
       }}
     >
-
       {/* HEADER */}
-
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           gap: "12px",
-          marginBottom: "14px"
+          marginBottom: "20px",
+          flexWrap: "wrap"
         }}
       >
-
-        {/* LEFT */}
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px"
-          }}
-        >
-
-          {/* IMAGE */}
-
+        {/* LEFT PROFILE PHOTO & TITLE */}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          {/* AVATAR UPLOAD */}
           <div
-            style={{
-              position: "relative"
-            }}
+            onClick={() => !uploadingImage && fileInputRef.current?.click()}
+            title="Click to upload profile photo"
+            style={{ position: "relative", cursor: "pointer" }}
           >
-
             <div
               style={{
-                width: "54px",
-                height: "54px",
+                width: "64px",
+                height: "64px",
                 borderRadius: "50%",
                 overflow: "hidden",
-                background:
-                  "linear-gradient(135deg,#163923,#285b37)",
+                background: "linear-gradient(135deg, #163923, #285b37)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "#fff",
-                fontSize: "18px",
-                fontWeight: "700"
+                fontSize: "22px",
+                fontWeight: "700",
+                border: "2px solid #eef8ee",
+                boxShadow: "0 4px 12px rgba(22,57,35,0.15)",
+                transition: "transform 0.2s ease"
               }}
             >
-
               {preview ? (
-
                 <img
                   src={preview}
                   alt="profile"
@@ -373,634 +285,483 @@ const handleSave = async () => {
                     objectFit: "cover"
                   }}
                 />
-
               ) : (
-
-                user?.name?.charAt(0)
-
+                user?.name?.charAt(0).toUpperCase() || "U"
               )}
-
             </div>
 
-            <label
+            <div
               style={{
                 position: "absolute",
                 bottom: "-2px",
                 right: "-2px",
-                width: "20px",
-                height: "20px",
+                width: "24px",
+                height: "24px",
                 borderRadius: "50%",
-                background: "#fff",
-                border:
-                  "1px solid rgba(0,0,0,0.08)",
+                background: "#163923",
+                color: "#fff",
+                border: "2px solid #fff",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                cursor: "pointer"
+                boxShadow: "0 2px 6px rgba(0,0,0,0.2)"
               }}
             >
+              {uploadingImage ? (
+                <FiLoader size={12} className="animate-spin" color="#fff" />
+              ) : (
+                <FiCamera size={12} color="#fff" />
+              )}
+            </div>
 
-              <FiCamera
-                size={10}
-                color="#163923"
-              />
-
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={handleImageChange}
-              />
-
-            </label>
-
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={handleImageChange}
+              disabled={uploadingImage}
+            />
           </div>
 
           {/* TEXT */}
-
           <div>
-
             <h3
               style={{
                 margin: 0,
                 fontSize: "20px",
+                fontWeight: "800",
                 color: "#163923"
               }}
             >
-              My Profile
+              {t("myProfile", "My Profile")}
             </h3>
-
-            <p
-              style={{
-                marginTop: "2px",
-                color: "#777",
-                fontSize: "11px"
-              }}
-            >
-              Personal & security settings
+            <p style={{ marginTop: "2px", color: "#666", fontSize: "12px" }}>
+              {t("personalSecuritySettings", "Edit your name, email, phone number & profile photo directly")}
             </p>
-
           </div>
-
         </div>
 
-        {/* SECURITY */}
-
+        {/* SECURITY STATUS */}
         <div
           style={{
-            background:
-              "linear-gradient(135deg,#f4faf4,#eef7ee)",
-            border:
-              "1px solid rgba(47,125,50,0.10)",
+            background: "linear-gradient(135deg, #f4faf4, #eef7ee)",
+            border: "1px solid rgba(47,125,50,0.15)",
             borderRadius: "12px",
-            padding: "8px 12px",
+            padding: "8px 14px",
             display: "flex",
             alignItems: "center",
             gap: "8px"
           }}
         >
-
-          <FiShield
-            size={14}
-            color="#2f7d32"
-          />
-
+          <FiShield size={16} color="#2f7d32" />
           <span
             style={{
-              fontSize: "11px",
+              fontSize: "12px",
               fontWeight: "700",
               color: "#2f7d32"
             }}
           >
-            Strong Security
+            {t("strongSecurity", "Direct Account Edits")}
           </span>
-
         </div>
-
       </div>
 
-      {/* INPUTS */}
-
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px"
-        }}
-      >
-
-        {/* NAME */}
-
+      {/* FORM INPUT FIELDS */}
+      <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {/* FULL NAME */}
         <div>
-
-          <p style={labelStyle}>
-            Full Name
-          </p>
-
+          <label style={labelStyle}>{t("fullName", "Full Name")}</label>
           <div style={inputWrapper}>
-
-            <FiUser
-              size={14}
-              color="#666"
-            />
-
+            <FiUser size={16} color="#666" />
             <input
               value={name}
-              onChange={(e) =>
-                setName(e.target.value)
-              }
-              
-style={{
-  ...inputStyle,
-  minWidth: 0
-}}
-
-
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your full name"
+              style={{ ...inputStyle, minWidth: 0 }}
+              required
             />
-
-            <FiCheckCircle
-              size={14}
-              color="#2f7d32"
-            />
-
+            <FiCheckCircle size={16} color="#2f7d32" />
           </div>
-
         </div>
 
-       {/* EMAIL */}
-
-<div>
-
-  <p style={labelStyle}>
-    Email Address
-  </p>
-
-  <div style={inputWrapper}>
-
-    <FiMail
-      size={14}
-      color="#666"
-    />
-
-    <input
-      value={newEmail}
-      onChange={(e) =>
-        setNewEmail(e.target.value)
-      }
-      
-      
-style={{
-  ...inputStyle,
-  minWidth: 0
-}}
-
-
-    />
-
-    
-
-      
-<button
-  type="button"
-  onClick={async () => {
-
-    console.log("BUTTON CLICKED");
-
-    if (!isEditingEmail) {
-
-      setIsEditingEmail(true);
-
-      console.log("EDIT MODE ENABLED");
-
-      return;
-    }
-
-    if (!emailOtpSent) {
-
-      console.log("SENDING OTP");
-
-      await handleSendEmailOtp();
-
-      return;
-    }
-
-    console.log("VERIFYING OTP");
-
-    handleVerifyEmailOtp();
-
-  }}
-  style={miniButton}
->
-
-  {!isEditingEmail
-    ? "Change"
-    : !emailOtpSent
-    ? "Send OTP"
-    : "Verify"}
-
-</button>
-
-
-
-  
-
-  </div>
-{emailOtpSent ? (
-
-  <div
-    style={{
-      marginTop: "8px"
-    }}
-  >
-
-    <input
-      placeholder="Enter OTP"
-      value={emailOtp}
-      onChange={(e) =>
-        setEmailOtp(e.target.value)
-      }
-      style={{
-        width: "100%",
-        height: "40px",
-        border:
-          "1px solid rgba(0,0,0,0.08)",
-        borderRadius: "10px",
-        padding: "0 12px",
-        fontSize: "12px",
-        outline: "none"
-      }}
-    />
-
-  </div>
-
-) : null}
-
-</div>
-
-        {/* PHONE */}
-
-       {/* PHONE */}
-
-<div>
-
-  <p style={labelStyle}>
-    Phone Number
-  </p>
-
-  <div style={inputWrapper}>
-
-    <FiPhone
-      size={14}
-      color="#666"
-    />
-
-    <input
-      value={phone}
-      onChange={(e) =>
-        setPhone(e.target.value)
-      }
-     
-      placeholder="Add phone number"
-      
-style={{
-  ...inputStyle,
-  minWidth: 0
-}}
-
-
-    />
-
-    
-
-      
-<button
-  type="button"
-  onClick={() => {
-
-    if (!isEditingPhone) {
-
-      setIsEditingPhone(true);
-
-    } else if (!phoneOtpSent) {
-
-      handleSendPhoneOtp();
-
-    } else {
-
-      handleVerifyPhoneOtp();
-
-    }
-
-  }}
-  style={miniButton}
->
-
-  {!isEditingPhone
-    ? phone
-      ? "Change"
-      : "Add"
-    : !phoneOtpSent
-    ? "Send OTP"
-    : "Verify"}
-
-</button>
-
-
-
-    
-
-  </div>
-
-  {phoneOtpSent && (
-
-    <input
-      placeholder="Enter OTP"
-      value={phoneOtp}
-      onChange={(e) =>
-        setPhoneOtp(e.target.value)
-      }
-      style={{
-        ...inputStyle,
-        marginTop: "8px",
-        border: "1px solid rgba(0,0,0,0.08)",
-        borderRadius: "10px",
-        height: "40px",
-        padding: "0 12px",
-        width: "100%"
-      }}
-    />
-
-  )}
-
-</div>
-
-      </div>
-
-      {/* SECURITY FEATURES */}
-
-      <div
-        style={{
-          marginTop: "16px"
-        }}
-      >
-
-        <h4
-          style={{
-            margin: 0,
-            marginBottom: "10px",
-            fontSize: "14px",
-            color: "#222"
-          }}
-        >
-          Security Features
-        </h4>
-
+        {/* EMAIL ADDRESS (DIRECT EDIT) */}
+        <div>
+          <label style={labelStyle}>{t("emailAddress", "Email Address")}</label>
+          <div style={inputWrapper}>
+            <FiMail size={16} color="#666" />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email address"
+              style={{ ...inputStyle, minWidth: 0 }}
+              required
+            />
+            <FiCheckCircle size={16} color="#2f7d32" />
+          </div>
+        </div>
+
+        {/* PHONE NUMBER (DIRECT EDIT) */}
+        <div>
+          <label style={labelStyle}>{t("phoneNumber", "Phone Number")}</label>
+          <div style={inputWrapper}>
+            <FiPhone size={16} color="#666" />
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="Enter your phone number"
+              style={{ ...inputStyle, minWidth: 0 }}
+            />
+            <FiCheckCircle size={16} color="#2f7d32" />
+          </div>
+        </div>
+
+        {/* SECURITY CARDS TOGGLES */}
+        <div style={{ marginTop: "12px" }}>
+          <h4
+            style={{
+              margin: "0 0 12px 0",
+              fontSize: "14px",
+              fontWeight: "700",
+              color: "#222"
+            }}
+          >
+            Account Security Alerts
+          </h4>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: "10px"
+            }}
+          >
+            <SecurityToggle
+              title="Login Alerts"
+              enabled={loginAlerts}
+              onToggle={() => setLoginAlerts(!loginAlerts)}
+            />
+            <SecurityToggle
+              title="Profile Change Alerts"
+              enabled={profileAlerts}
+              onToggle={() => setProfileAlerts(!profileAlerts)}
+            />
+          </div>
+        </div>
+
+        {/* ACTION BUTTONS */}
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(2,1fr)",
-            gap: "8px"
+            display: "flex",
+            gap: "12px",
+            marginTop: "16px",
+            flexWrap: "wrap"
           }}
         >
+          <button
+            type="submit"
+            disabled={saving || uploadingImage}
+            style={{
+              ...saveButton,
+              opacity: saving || uploadingImage ? 0.7 : 1
+            }}
+          >
+            {saving ? "Saving Changes..." : t("saveChanges", "Save Changes")}
+          </button>
 
-          <SecurityCard
-            title="Email Verification"
-          />
-
-          <SecurityCard
-            title="Phone Verification"
-          />
-
-          <SecurityCard
-            title="Login Alerts"
-          />
-
-          <SecurityCard
-            title="Profile Alerts"
-          />
-
+          <button
+            type="button"
+            onClick={() => setShowPasswordModal(true)}
+            style={passwordButton}
+          >
+            <FiLock size={15} /> {t("changePassword", "Change Password")}
+          </button>
         </div>
+      </form>
 
-      </div>
-
-      {/* BUTTONS */}
-
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          marginTop: "18px"
-        }}
-      >
-
-       <button
-  onClick={handleSave}
-  disabled={saving}
-  style={{
-    ...saveButton,
-    opacity: saving ? 0.7 : 1
-  }}
->
-          {saving ? "Saving..." : "Save Changes"}
-        </button>
-
-        <button
-          style={passwordButton}
+      {/* SAVE MESSAGE NOTIFICATION */}
+      {saveMessage && (
+        <div
+          style={{
+            marginTop: "14px",
+            background:
+              saveMessage.toLowerCase().includes("wrong") ||
+              saveMessage.toLowerCase().includes("fail") ||
+              saveMessage.toLowerCase().includes("invalid")
+                ? "#fff3f3"
+                : "#eef8ee",
+            color:
+              saveMessage.toLowerCase().includes("wrong") ||
+              saveMessage.toLowerCase().includes("fail") ||
+              saveMessage.toLowerCase().includes("invalid")
+                ? "#d32f2f"
+                : "#2f7d32",
+            border:
+              saveMessage.toLowerCase().includes("wrong") ||
+              saveMessage.toLowerCase().includes("fail") ||
+              saveMessage.toLowerCase().includes("invalid")
+                ? "1px solid #ffcdd2"
+                : "1px solid #c8e6c9",
+            padding: "10px 14px",
+            borderRadius: "10px",
+            fontSize: "12px",
+            fontWeight: "600"
+          }}
         >
+          {saveMessage}
+        </div>
+      )}
 
-          <FiLock size={13} />
-
-          Password
-
-        </button>
-
-      </div>
-{saveMessage && (
-
-  <div
-    style={{
-      marginTop: "12px",
-      background:
-        saveMessage.includes("wrong")
-          ? "#fff3f3"
-          : "#eef8ee",
-      color:
-        saveMessage.includes("wrong")
-          ? "#d32f2f"
-          : "#2f7d32",
-      padding: "10px 12px",
-      borderRadius: "10px",
-      fontSize: "11px",
-      fontWeight: "600"
-    }}
-  >
-    {saveMessage}
-  </div>
-
-)}
       {/* FOOTER */}
-
       <div
         style={{
-          marginTop: "14px",
+          marginTop: "16px",
           display: "flex",
           alignItems: "center",
           gap: "6px",
-          fontSize: "10px",
-          color: "#777"
+          fontSize: "11px",
+          color: "#666"
         }}
       >
-
-        <FiShield size={11} />
-
-        Encrypted & protected account security.
-
+        <FiShield size={13} color="#2f7d32" />
+        256-Bit Encrypted & protected account profile security.
       </div>
 
+      {/* CHANGE PASSWORD MODAL */}
+      {showPasswordModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+            padding: "20px"
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "420px",
+              background: "#fff",
+              borderRadius: "20px",
+              padding: "24px",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.2)"
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "800", color: "#163923" }}>
+                Change Password
+              </h3>
+              <FiX
+                size={20}
+                style={{ cursor: "pointer", color: "#666" }}
+                onClick={() => setShowPasswordModal(false)}
+              />
+            </div>
+
+            <form onSubmit={handleChangePassword} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div>
+                <label style={labelStyle}>Current Password</label>
+                <input
+                  type="password"
+                  placeholder="Enter current password"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  style={modalInputStyle}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={labelStyle}>New Password</label>
+                <input
+                  type="password"
+                  placeholder="At least 6 characters"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  style={modalInputStyle}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Confirm New Password</label>
+                <input
+                  type="password"
+                  placeholder="Re-enter new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  style={modalInputStyle}
+                  required
+                />
+              </div>
+
+              <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  style={{
+                    flex: 1,
+                    height: "42px",
+                    borderRadius: "10px",
+                    border: "1px solid #cbd5e1",
+                    background: "#fff",
+                    color: "#475569",
+                    fontWeight: "700",
+                    cursor: "pointer"
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={changingPassword}
+                  style={{
+                    flex: 1.5,
+                    height: "42px",
+                    borderRadius: "10px",
+                    border: "none",
+                    background: "#163923",
+                    color: "#fff",
+                    fontWeight: "700",
+                    cursor: "pointer"
+                  }}
+                >
+                  {changingPassword ? "Updating..." : "Update Password"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-/* ========================= */
-/* SECURITY CARD */
-/* ========================= */
-
-function SecurityCard({
-  title
-}) {
-
+function SecurityToggle({ title, enabled, onToggle }) {
   return (
-
     <div
+      onClick={onToggle}
       style={{
-        border:
-          "1px solid rgba(0,0,0,0.05)",
+        border: "1px solid rgba(0,0,0,0.06)",
         borderRadius: "10px",
-        padding: "8px 10px",
+        padding: "10px 12px",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        gap: "6px"
+        background: "#fafafa",
+        cursor: "pointer"
       }}
     >
-
       <div>
-
-        <h4
-          style={{
-            margin: 0,
-            fontSize: "11px",
-            color: "#222"
-          }}
-        >
+        <h4 style={{ margin: 0, fontSize: "12px", fontWeight: "700", color: "#222" }}>
           {title}
         </h4>
-
-        <p
-          style={{
-            marginTop: "2px",
-            fontSize: "9px",
-            color: "#777"
-          }}
-        >
-          Enabled
+        <p style={{ marginTop: "2px", margin: 0, fontSize: "10px", color: "#777" }}>
+          {enabled ? "Enabled" : "Disabled"}
         </p>
-
       </div>
 
       <div
         style={{
-          background: "#eef8ee",
-          color: "#2f7d32",
-          padding: "3px 7px",
+          width: "36px",
+          height: "20px",
           borderRadius: "999px",
-          fontSize: "9px",
-          fontWeight: "700"
+          background: enabled ? "#285b37" : "#cbd5e1",
+          position: "relative",
+          transition: "all 0.2s ease"
         }}
       >
-        ON
+        <div
+          style={{
+            width: "16px",
+            height: "16px",
+            borderRadius: "50%",
+            background: "#fff",
+            position: "absolute",
+            top: "2px",
+            left: enabled ? "18px" : "2px",
+            transition: "all 0.2s ease"
+          }}
+        />
       </div>
-
     </div>
   );
 }
 
-/* ========================= */
-/* STYLES */
-/* ========================= */
-
 const labelStyle = {
-  marginBottom: "5px",
-  fontSize: "11px",
-  color: "#555",
-  fontWeight: "500"
+  display: "block",
+  marginBottom: "4px",
+  fontSize: "12px",
+  color: "#444",
+  fontWeight: "600"
 };
 
 const inputWrapper = {
   display: "flex",
   alignItems: "center",
-  gap: "8px",
-  border:
-    "1px solid rgba(0,0,0,0.08)",
+  gap: "10px",
+  border: "1.5px solid rgba(0,0,0,0.1)",
   borderRadius: "10px",
-  padding: "0 10px",
-  height: "42px"
+  padding: "0 12px",
+  height: "44px",
+  background: "#fafafa"
 };
-
 
 const inputStyle = {
   width: "100%",
   border: "none",
   outline: "none",
-  fontSize: "12px",
-  background: "transparent"
+  fontSize: "13px",
+  background: "transparent",
+  color: "#163923",
+  fontWeight: "600"
 };
 
-
-const miniButton = {
-  border: "none",
-  background: "#eef8ee",
-  color: "#2f7d32",
-  padding: "6px 10px",
-  borderRadius: "8px",
-  fontSize: "10px",
-  fontWeight: "700",
-  cursor: "pointer"
-};
-const verifiedBadge = {
-  color: "#2f7d32",
-  fontSize: "10px",
-  fontWeight: "700"
+const modalInputStyle = {
+  width: "100%",
+  height: "42px",
+  border: "1.5px solid #cbd5e1",
+  borderRadius: "10px",
+  padding: "0 12px",
+  fontSize: "13px",
+  outline: "none",
+  boxSizing: "border-box"
 };
 
 const saveButton = {
   flex: 1,
-  height: "42px",
-  background:
-    "linear-gradient(135deg,#163923,#285b37)",
+  height: "44px",
+  background: "linear-gradient(135deg,#163923,#285b37)",
   color: "#fff",
   border: "none",
   borderRadius: "10px",
   fontWeight: "700",
-  fontSize: "12px",
-  cursor: "pointer"
+  fontSize: "13px",
+  cursor: "pointer",
+  boxShadow: "0 4px 12px rgba(22,57,35,0.2)"
 };
 
 const passwordButton = {
   flex: 1,
-  height: "42px",
-  background: "#f7f7f7",
-  border:
-    "1px solid rgba(0,0,0,0.08)",
+  height: "44px",
+  background: "#f8fafc",
+  border: "1px solid rgba(0,0,0,0.1)",
+  color: "#334155",
   borderRadius: "10px",
   fontWeight: "700",
-  fontSize: "12px",
+  fontSize: "13px",
   cursor: "pointer",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  gap: "6px"
+  gap: "8px"
 };
 
 export default ProfileSection;

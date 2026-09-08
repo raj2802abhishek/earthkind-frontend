@@ -3,899 +3,709 @@ import {
   PlusCircle,
   PackagePlus,
   Sparkles,
-  ImagePlus
+  ImagePlus,
+  Tag,
+  Package,
+  Layers,
+  FileText,
+  CheckCircle2,
+  ListOrdered,
+  Leaf,
+  Trash2,
+  Plus
 } from "lucide-react";
 
-function AddProductPanel({
+import { useState, useEffect } from "react";
 
+function AddProductPanel({
   name,
   setName,
-
   price,
   setPrice,
-
   stock,
   setStock,
-
   category,
   setCategory,
-
   story,
   setStory,
-
-  benefits,
+  benefits = [""],
   setBenefits,
-
-  howToUse,
+  howToUse = [""],
   setHowToUse,
-
-  ingredients,
+  ingredients = [""],
   setIngredients,
-
-  images,
+  images = [],
   setImages,
-
+  imagePreviews = [],
   setImage,
-
   uploadImage,
-
   addProduct
-
 }) {
-  const updateArrayField = (
-  setter,
-  index,
-  value,
-  currentArray
-) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  const updated = [...currentArray];
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
-  updated[index] = value;
+  const previewSources = [
+    ...(Array.isArray(images) ? images : []),
+    ...(Array.isArray(imagePreviews) ? imagePreviews : [])
+  ].filter(Boolean);
 
-  setter(updated);
+  const updateArrayField = (setter, index, value, currentArray) => {
+    const updated = [...currentArray];
+    updated[index] = value;
+    setter(updated);
+  };
 
-};
+  const addArrayField = (setter, currentArray) => {
+    setter([...currentArray, ""]);
+  };
 
-const addArrayField = (
-  setter,
-  currentArray
-) => {
-
-  setter([
-    ...currentArray,
-    ""
-  ]);
-
-};
+  const removeArrayField = (setter, index, currentArray) => {
+    if (currentArray.length === 1) {
+      setter([""]);
+    } else {
+      setter(currentArray.filter((_, i) => i !== index));
+    }
+  };
 
   return (
+    <div style={{ maxWidth: "1200px", margin: "0 auto", paddingBottom: "40px" }}>
+      
+      {/* 1. HEADER BANNER SECTION */}
+      <div style={{
+        marginBottom: "36px",
+        background: "linear-gradient(135deg, rgba(22, 57, 35, 0.95), rgba(33, 77, 49, 0.9), rgba(46, 106, 69, 0.95))",
+        borderRadius: "32px",
+        padding: "36px 40px",
+        color: "#fff",
+        boxShadow: "0 20px 50px rgba(22, 57, 35, 0.22)",
+        position: "relative",
+        overflow: "hidden",
+        border: "1px solid rgba(255, 255, 255, 0.15)"
+      }}>
+        {/* Glow ambient circle */}
+        <div style={{
+          position: "absolute",
+          top: "-100px",
+          right: "-80px",
+          width: "320px",
+          height: "320px",
+          background: "radial-gradient(circle, rgba(163, 230, 53, 0.25) 0%, rgba(255,255,255,0) 70%)",
+          borderRadius: "50%",
+          pointerEvents: "none"
+        }} />
 
-    <div>
+        <div style={{ position: "relative", zIndex: 2, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
+          <div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(255, 255, 255, 0.15)", padding: "6px 16px", borderRadius: "999px", backdropFilter: "blur(10px)", marginBottom: "14px", fontSize: "13px", fontWeight: "600", letterSpacing: "1px" }}>
+              <Sparkles size={14} color="#a3e635" /> STORE MANAGEMENT CONSOLE
+            </div>
+            <h1 style={{ fontSize: "38px", fontWeight: "800", margin: 0, letterSpacing: "-1px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Add New Product 🌿
+            </h1>
+            <p style={{ margin: "8px 0 0 0", color: "rgba(255, 255, 255, 0.8)", fontSize: "15px", maxWidth: "560px", lineHeight: "1.6" }}>
+              Create, customize and publish premium natural products to your Earthkind store catalog.
+            </p>
+          </div>
 
-      {/* HEADER */}
-      <div
-        style={{
-          marginBottom: "48px",
-
-          display: "flex",
-
-          flexDirection: "column",
-
-          alignItems: "center",
-
-          justifyContent: "center",
-
-          textAlign: "center"
-        }}
-      >
-
-        <h1
-          style={{
-            fontSize: "58px",
-
-            color: "#123524",
-
-            marginBottom: "18px",
-
-            fontWeight: "800",
-
-            letterSpacing: "-2px",
-
-            display: "flex",
-
-            alignItems: "center",
-
-            justifyContent: "center",
-
-            gap: "16px",
-
-            fontFamily:
-              "'Poppins', sans-serif"
-          }}
-        >
-
-          Add Product
-
-          <Sparkles
-            size={44}
-            color="#7c3aed"
-          />
-
-        </h1>
-
-        <p
-          style={{
-            color: "#6b7280",
-
-            fontSize: "18px",
-
-            maxWidth: "600px",
-
-            lineHeight: "1.7"
-          }}
-        >
-          Create and publish premium products
-          for your EarthKind Naturals store.
-        </p>
-
+          <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{
+              background: "rgba(255, 255, 255, 0.12)",
+              backdropFilter: "blur(16px)",
+              borderRadius: "20px",
+              padding: "16px 24px",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              textAlign: "center"
+            }}>
+              <span style={{ display: "block", fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "rgba(255, 255, 255, 0.7)", fontWeight: "600" }}>Upload Status</span>
+              <span style={{ fontSize: "20px", fontWeight: "800", color: previewSources.length > 0 ? "#a3e635" : "#fff" }}>
+                {previewSources.length} Image{previewSources.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* MAIN CARD */}
-      <div
-        style={{
-          background: "#fff",
-
-          borderRadius: "30px",
-
-          padding: "35px",
-
-          boxShadow:
-            "0 10px 30px rgba(0,0,0,0.06)",
-
-          maxWidth: "950px",
-
-          margin: "0 auto"
-        }}
-      >
-
-        {/* GRID */}
-        <div
-          style={{
-            display: "grid",
-
-            gridTemplateColumns:
-              "repeat(3,minmax(0,1fr))",
-
-            gap: "24px"
-          }}
-        >
-
-          {/* PRODUCT NAME */}
-          <div>
-
-            <label
-              style={labelStyle}
-            >
-              Product Name
-            </label>
-
-            <input
-              type="text"
-
-              placeholder="Enter product name"
-
-              value={name}
-
-              onChange={(e) =>
-                setName(
-                  e.target.value
-                )
-              }
-
-              style={inputStyle}
-            />
-
+      {/* MAIN FORM SHELL */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+        
+        {/* SECTION 1: GENERAL INFORMATION */}
+        <div style={sectionCardStyle}>
+          <div style={sectionHeaderStyle}>
+            <div style={sectionIconStyle}><Tag size={22} /></div>
+            <div>
+              <h3 style={sectionTitleStyle}>1. Basic Details & Pricing</h3>
+              <p style={sectionSubStyle}>Specify the product name, pricing, stock levels, and store category</p>
+            </div>
           </div>
 
-          {/* PRICE */}
-          <div>
-
-            <label
-              style={labelStyle}
-            >
-              Product Price
-            </label>
-
-            <input
-              type="number"
-
-              placeholder="₹ Price"
-
-              value={price}
-
-              onChange={(e) =>
-                setPrice(
-                  e.target.value
-                )
-              }
-
-              style={inputStyle}
-            />
-
-          </div>
-
-          {/* STOCK */}
-          <div>
-
-            <label
-              style={labelStyle}
-            >
-              Stock Quantity
-            </label>
-
-            <input
-              type="number"
-
-              placeholder="Enter stock quantity"
-
-              value={stock}
-
-              onChange={(e) =>
-                setStock(
-                  e.target.value
-                )
-              }
-
-              style={inputStyle}
-            />
-
-          </div>
-
-          {/* CATEGORY */}
-          <div
-            style={{
-              gridColumn:
-                "span 3"
-            }}
-          >
-
-            <label
-              style={labelStyle}
-            >
-              Category
-            </label>
-
-            <select
-              value={category}
-
-              onChange={(e) =>
-                setCategory(
-                  e.target.value
-                )
-              }
-
-              style={inputStyle}
-            >
-
-              <option value="">
-                Select Category
-              </option>
-
-              <option>
-                Herbal Powders
-              </option>
-
-              <option>
-                Natural Seeds
-              </option>
-
-              <option>
-                Herbal Tea
-              </option>
-
-              <option>
-                Nuts & Dry Fruits
-              </option>
-
-            </select>
-
-          </div>
-          {/* PRODUCT STORY */}
-<div
-  style={{
-    gridColumn: "span 3"
-  }}
->
-
-  <label style={labelStyle}>
-    Product Story
-  </label>
-
-  <textarea
-
-    placeholder="Write premium storytelling for the product..."
-
-    value={story}
-
-    onChange={(e) =>
-      setStory(e.target.value)
-    }
-
-    style={{
-      ...inputStyle,
-
-      minHeight: "180px",
-
-      padding: "20px",
-
-      resize: "vertical"
-    }}
-  />
-
-</div>
-
-{/* BENEFITS */}
-<div
-  style={{
-    gridColumn: "span 3"
-  }}
->
-
-  <div
-    style={{
-      display: "flex",
-
-      justifyContent:
-        "space-between",
-
-      alignItems: "center",
-
-      marginBottom: "16px"
-    }}
-  >
-
-    <label style={labelStyle}>
-      Product Benefits
-    </label>
-
-    <button
-
-      type="button"
-
-      onClick={() =>
-        addArrayField(
-          setBenefits,
-          benefits
-        )
-      }
-
-      className="earth-btn"
-    >
-      Add Benefit
-    </button>
-
-  </div>
-
-  {benefits.map(
-    (benefit, index) => (
-
-    <input
-
-      key={index}
-
-      type="text"
-
-      placeholder={`Benefit ${index + 1}`}
-
-      value={benefit}
-
-      onChange={(e) =>
-        updateArrayField(
-          setBenefits,
-          index,
-          e.target.value,
-          benefits
-        )
-      }
-
-      style={{
-        ...inputStyle,
-
-        marginBottom: "14px"
-      }}
-    />
-
-  ))}
-
-</div>
-
-{/* HOW TO USE */}
-<div
-  style={{
-    gridColumn: "span 3"
-  }}
->
-
-  <div
-    style={{
-      display: "flex",
-
-      justifyContent:
-        "space-between",
-
-      alignItems: "center",
-
-      marginBottom: "16px"
-    }}
-  >
-
-    <label style={labelStyle}>
-      How To Use
-    </label>
-
-    <button
-
-      type="button"
-
-      onClick={() =>
-        addArrayField(
-          setHowToUse,
-          howToUse
-        )
-      }
-
-      className="earth-btn"
-    >
-      Add Step
-    </button>
-
-  </div>
-
-  {howToUse.map(
-    (step, index) => (
-
-    <input
-
-      key={index}
-
-      type="text"
-
-      placeholder={`Step ${index + 1}`}
-
-      value={step}
-
-      onChange={(e) =>
-        updateArrayField(
-          setHowToUse,
-          index,
-          e.target.value,
-          howToUse
-        )
-      }
-
-      style={{
-        ...inputStyle,
-
-        marginBottom: "14px"
-      }}
-    />
-
-  ))}
-
-</div>
-
-{/* INGREDIENTS */}
-<div
-  style={{
-    gridColumn: "span 3"
-  }}
->
-
-  <div
-    style={{
-      display: "flex",
-
-      justifyContent:
-        "space-between",
-
-      alignItems: "center",
-
-      marginBottom: "16px"
-    }}
-  >
-
-    <label style={labelStyle}>
-      Ingredients
-    </label>
-
-    <button
-
-      type="button"
-
-      onClick={() =>
-        addArrayField(
-          setIngredients,
-          ingredients
-        )
-      }
-
-      className="earth-btn"
-    >
-      Add Ingredient
-    </button>
-
-  </div>
-
-  {ingredients.map(
-    (ingredient, index) => (
-
-    <input
-
-      key={index}
-
-      type="text"
-
-      placeholder={`Ingredient ${index + 1}`}
-
-      value={ingredient}
-
-      onChange={(e) =>
-        updateArrayField(
-          setIngredients,
-          index,
-          e.target.value,
-          ingredients
-        )
-      }
-
-      style={{
-        ...inputStyle,
-
-        marginBottom: "14px"
-      }}
-    />
-
-  ))}
-
-</div>
-
-          {/* IMAGE UPLOAD */}
-          <div
-            style={{
-              gridColumn:
-                "span 3"
-            }}
-          >
-
-            <label
-              style={labelStyle}
-            >
-              Product Image
-            </label>
-
-            <div
-              style={{
-                border:
-                  "2px dashed #cbd5e1",
-
-                borderRadius:
-                  "28px",
-
-                padding: "55px 30px",
-
-                textAlign:
-                  "center",
-
-                background:
-                  "linear-gradient(180deg,#fafafa,#f3f4f6)",
-
-                transition: "0.3s ease",
-
-                cursor: "pointer",
-
-                position: "relative",
-
-                overflow: "hidden"
-              }}
-            >
-
-              <div
-                style={{
-                  width: "90px",
-                  height: "90px",
-                  borderRadius: "50%",
-                  background:
-                    "linear-gradient(135deg,#14532d,#1f7a4d)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  margin: "0 auto"
-                }}
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: "20px" }}>
+            {/* PRODUCT NAME */}
+            <div style={{ gridColumn: isMobile ? "span 1" : "span 2" }}>
+              <label style={labelStyle}>Product Name <span style={{ color: "#ef4444" }}>*</span></label>
+              <input
+                type="text"
+                className="add-product-input"
+                placeholder="e.g. Pure Organic Ashwagandha Powder"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+
+            {/* CATEGORY */}
+            <div>
+              <label style={labelStyle}>Category <span style={{ color: "#ef4444" }}>*</span></label>
+              <select
+                className="add-product-input"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                style={{ ...inputStyle, cursor: "pointer" }}
               >
+                <option value="">Select Category</option>
+                <option value="Herbal Powders">Herbal Powders</option>
+                <option value="Natural Seeds">Natural Seeds</option>
+                <option value="Herbal Tea">Herbal Tea</option>
+                <option value="Nuts & Dry Fruits">Nuts & Dry Fruits</option>
+                <option value="Wellness Oils">Wellness Oils</option>
+              </select>
+            </div>
 
-                <ImagePlus
-                  size={40}
-                  color="#fff"
-                />
+            {/* PRICE */}
+            <div>
+              <label style={labelStyle}>Product Price (₹) <span style={{ color: "#ef4444" }}>*</span></label>
+              <input
+                type="number"
+                className="add-product-input"
+                placeholder="e.g. 499"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
 
+            {/* STOCK */}
+            <div>
+              <label style={labelStyle}>Stock Quantity</label>
+              <input
+                type="number"
+                className="add-product-input"
+                placeholder="e.g. 50"
+                value={stock || ""}
+                onChange={(e) => setStock(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 2: PRODUCT STORY & DESCRIPTION */}
+        <div style={sectionCardStyle}>
+          <div style={sectionHeaderStyle}>
+            <div style={sectionIconStyle}><FileText size={22} /></div>
+            <div>
+              <h3 style={sectionTitleStyle}>2. Storytelling & Description</h3>
+              <p style={sectionSubStyle}>Provide an engaging description highlighting quality, origin, and wellness benefits</p>
+            </div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Product Story / Description</label>
+            <textarea
+              className="add-product-textarea"
+              placeholder="Write compelling storytelling for your customers about purity, sourcing, and benefits..."
+              value={story}
+              onChange={(e) => setStory(e.target.value)}
+              style={{
+                ...inputStyle,
+                minHeight: "160px",
+                padding: "16px 20px",
+                resize: "vertical",
+                lineHeight: "1.6"
+              }}
+            />
+          </div>
+        </div>
+
+        {/* SECTION 3: BENEFITS, HOW TO USE & INGREDIENTS */}
+        <div style={sectionCardStyle}>
+          <div style={sectionHeaderStyle}>
+            <div style={sectionIconStyle}><CheckCircle2 size={22} /></div>
+            <div>
+              <h3 style={sectionTitleStyle}>3. Product Features & Guidance</h3>
+              <p style={sectionSubStyle}>Add key health benefits, step-by-step usage instructions, and pure ingredients</p>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+            
+            {/* BENEFITS */}
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                <label style={labelStyle}><CheckCircle2 size={16} color="#163923" /> Health Benefits</label>
+                <button
+                  type="button"
+                  onClick={() => addArrayField(setBenefits, benefits)}
+                  style={addButtonStyle}
+                >
+                  <Plus size={15} /> Add Benefit
+                </button>
               </div>
 
-              <p
-                style={{
-                  marginTop: "18px",
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {benefits.map((benefit, index) => (
+                  <div key={index} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                    <span style={indexBadgeStyle}>{index + 1}</span>
+                    <input
+                      type="text"
+                      className="add-product-input"
+                      placeholder={`e.g. Boosts immunity & energy levels`}
+                      value={benefit}
+                      onChange={(e) => updateArrayField(setBenefits, index, e.target.value, benefits)}
+                      style={{ ...inputStyle, margin: 0, flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeArrayField(setBenefits, index, benefits)}
+                      style={removeButtonStyle}
+                      title="Remove Benefit"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                  color: "#555",
+            {/* HOW TO USE */}
+            <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                <label style={labelStyle}><ListOrdered size={16} color="#163923" /> How To Use (Step-by-Step)</label>
+                <button
+                  type="button"
+                  onClick={() => addArrayField(setHowToUse, howToUse)}
+                  style={addButtonStyle}
+                >
+                  <Plus size={15} /> Add Step
+                </button>
+              </div>
 
-                  fontSize: "17px",
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {howToUse.map((step, index) => (
+                  <div key={index} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                    <span style={indexBadgeStyle}>Step {index + 1}</span>
+                    <input
+                      type="text"
+                      className="add-product-input"
+                      placeholder={`e.g. Mix 1 tsp with warm milk or honey`}
+                      value={step}
+                      onChange={(e) => updateArrayField(setHowToUse, index, e.target.value, howToUse)}
+                      style={{ ...inputStyle, margin: 0, flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeArrayField(setHowToUse, index, howToUse)}
+                      style={removeButtonStyle}
+                      title="Remove Step"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                  fontWeight: "500"
-                }}
-              >
-                Drag & Drop Product Image
-              </p>
+            {/* INGREDIENTS */}
+            <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                <label style={labelStyle}><Leaf size={16} color="#163923" /> Ingredients</label>
+                <button
+                  type="button"
+                  onClick={() => addArrayField(setIngredients, ingredients)}
+                  style={addButtonStyle}
+                >
+                  <Plus size={15} /> Add Ingredient
+                </button>
+              </div>
 
-              <p
-                style={{
-                  marginTop: "8px",
-
-                  color: "#9ca3af",
-
-                  fontSize: "14px"
-                }}
-              >
-                PNG, JPG, WEBP supported
-              </p>
-
-              <label
-                style={{
-                  display: "inline-block",
-                  marginTop: "24px",
-                  background:
-                    "#123524",
-                  color: "#fff",
-                  padding: "13px 24px",
-                  borderRadius: "14px",
-                  cursor: "pointer",
-                  fontWeight: "600",
-                  fontSize: "15px"
-                }}
-              >
-
-                Choose Product Image
-
-                <input
-                  type="file"
-
-                  hidden
-
-                  onChange={(e) =>
-                    setImage(
-                      e.target.files[0]
-                    )
-                  }
-                />
-
-              </label>
-
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {ingredients.map((ingredient, index) => (
+                  <div key={index} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                    <span style={indexBadgeStyle}>#</span>
+                    <input
+                      type="text"
+                      className="add-product-input"
+                      placeholder={`e.g. 100% Pure Organic Ashwagandha Root`}
+                      value={ingredient}
+                      onChange={(e) => updateArrayField(setIngredients, index, e.target.value, ingredients)}
+                      style={{ ...inputStyle, margin: 0, flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeArrayField(setIngredients, index, ingredients)}
+                      style={removeButtonStyle}
+                      title="Remove Ingredient"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
           </div>
-
         </div>
 
-        {/* ACTION BUTTONS */}
-        <div
-          style={{
-            display: "flex",
+        {/* SECTION 4: MEDIA UPLOAD GALLERY */}
+        <div style={sectionCardStyle}>
+          <div style={sectionHeaderStyle}>
+            <div style={sectionIconStyle}><ImagePlus size={22} /></div>
+            <div>
+              <h3 style={sectionTitleStyle}>4. Product Images & Gallery</h3>
+              <p style={sectionSubStyle}>Upload high-res product photos to showcase in the store</p>
+            </div>
+          </div>
 
-            gap: "18px",
-
-            marginTop: "35px",
-
-            flexWrap: "wrap",
-
-            justifyContent: "center",
-
-            alignItems: "center",
-
-            width: "100%"
-          }}
-        >
-
-          {/* UPLOAD */}
-          <button
-            onClick={uploadImage}
-
+          <div
+            className="image-upload-area"
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setImage(e.dataTransfer.files);
+            }}
             style={{
-              background:
-                "#14532d",
-
-              color: "#fff",
-
-              border: "none",
-
-              padding:
-                "14px 24px",
-
-              borderRadius:
-                "16px",
-
-              display: "flex",
-
-              alignItems:
-                "center",
-
-              gap: "10px",
-
-              cursor: "pointer",
-
-              fontWeight: "600",
-
-              fontSize: "15px",
-
-              boxShadow:
-                "0 8px 20px rgba(20,83,45,0.2)"
+              border: "2px dashed #cbd5e1",
+              borderRadius: "28px",
+              padding: "45px 24px",
+              textAlign: "center",
+              background: "linear-gradient(180deg, #fafafa, #f1f5f9)",
+              transition: "border-color 0.3s ease",
+              position: "relative"
             }}
           >
-
-            <UploadCloud
-              size={18}
-            />
-
-            Upload Image
-
-          </button>
-
-          {/* ADD PRODUCT */}
-          <button
-            onClick={addProduct}
-
-            style={{
-              background:
-                "linear-gradient(135deg,#123524,#1f7a4d)",
-
-              color: "#fff",
-
-              border: "none",
-
-              padding:
-                "14px 26px",
-
-              borderRadius:
-                "16px",
-
+            <div style={{
+              width: "76px",
+              height: "76px",
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #163923, #285b37)",
               display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px auto",
+              boxShadow: "0 10px 22px rgba(22, 57, 35, 0.2)",
+              color: "#fff"
+            }}>
+              <ImagePlus size={36} />
+            </div>
 
-              alignItems:
-                "center",
+            <h4 style={{ margin: "0 0 6px 0", fontSize: "18px", fontWeight: "700", color: "#163923" }}>
+              Drag & Drop Product Images Here
+            </h4>
+            <p style={{ margin: "0 0 20px 0", color: "#6b7280", fontSize: "14px" }}>
+              Supports High Quality PNG, JPG, and WEBP files
+            </p>
 
-              gap: "10px",
-
+            <label style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "#163923",
+              color: "#fff",
+              padding: "14px 28px",
+              borderRadius: "16px",
               cursor: "pointer",
+              fontWeight: "700",
+              fontSize: "14px",
+              boxShadow: "0 8px 20px rgba(22, 57, 35, 0.25)"
+            }}>
+              <ImagePlus size={18} /> Browse File System
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                multiple
+                onChange={(e) => {
+                  setImage(e.target.files);
+                  e.target.value = "";
+                }}
+              />
+            </label>
 
-              fontWeight: "600",
-
-              fontSize: "15px",
-
-              boxShadow:
-                "0 10px 24px rgba(0,0,0,0.12)"
-            }}
-          >
-
-            <PlusCircle
-              size={18}
-            />
-
-            Add Product
-
-          </button>
-
+            {/* GALLERY PREVIEW */}
+            {previewSources.length > 0 && (
+              <div style={{ marginTop: "28px", paddingTop: "24px", borderTop: "1px dashed #cbd5e1" }}>
+                <span style={{ fontSize: "13px", fontWeight: "700", color: "#163923", display: "block", marginBottom: "14px" }}>
+                  Selected Product Images ({previewSources.length})
+                </span>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "14px", justifyContent: "center" }}>
+                  {previewSources.map((src, index) => (
+                    <div
+                      key={`${src}-${index}`}
+                      style={{
+                        position: "relative",
+                        borderRadius: "16px",
+                        overflow: "hidden",
+                        border: "2px solid #163923",
+                        boxShadow: "0 6px 16px rgba(0,0,0,0.1)"
+                      }}
+                    >
+                      <img
+                        src={src}
+                        alt={`Preview ${index + 1}`}
+                        style={{ width: "100px", height: "100px", objectFit: "cover", display: "block" }}
+                      />
+                      {index === 0 && (
+                        <span style={{
+                          position: "absolute",
+                          bottom: "4px",
+                          left: "4px",
+                          right: "4px",
+                          background: "rgba(22, 57, 35, 0.9)",
+                          color: "#a3e635",
+                          fontSize: "10px",
+                          fontWeight: "800",
+                          padding: "2px 4px",
+                          borderRadius: "6px",
+                          textAlign: "center"
+                        }}>
+                          PRIMARY
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (setImages) {
+                            setImages((Array.isArray(images) ? images : []).filter((url) => url !== src));
+                          }
+                        }}
+                        style={{
+                          position: "absolute",
+                          top: "4px",
+                          right: "4px",
+                          background: "rgba(239, 68, 68, 0.9)",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "50%",
+                          width: "22px",
+                          height: "22px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center"
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-      </div>
-
-      {/* BOTTOM INFO CARD */}
-      <div
-        style={{
-          marginTop: "28px",
-
-          background: "#123524",
-
-          color: "#fff",
-
-          padding: "22px",
-
-          borderRadius: "24px",
-
+        {/* PUBLISH & UPLOAD ACTIONS TOOLBAR */}
+        <div style={{
           display: "flex",
-
-          alignItems: "center",
-
-          justifyContent: "center",
-
-          textAlign: "center",
-
           gap: "18px",
-
-          maxWidth: "920px",
-
-          marginLeft: "auto",
-
-          marginRight: "auto"
-        }}
-      >
-
-        <PackagePlus
-          size={36}
-        />
-
-        <div>
-
-          <h3
+          justifyContent: "flex-end",
+          flexWrap: "wrap",
+          background: "#fff",
+          borderRadius: "28px",
+          padding: "24px 32px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
+          border: "1px solid rgba(22, 57, 35, 0.08)"
+        }}>
+          {/* UPLOAD IMAGE BUTTON */}
+          <button
+            type="button"
+            className="action-btn"
+            onClick={uploadImage}
             style={{
-              margin: 0
+              background: "#f3f4f6",
+              color: "#163923",
+              border: "1.5px solid #e5e7eb",
+              padding: "16px 28px",
+              borderRadius: "18px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "10px",
+              cursor: "pointer",
+              fontWeight: "700",
+              fontSize: "15px",
+              transition: "all 0.2s ease"
             }}
           >
-            Premium Product Management
-          </h3>
+            <UploadCloud size={18} /> Upload Image File
+          </button>
 
-          <p
+          {/* PUBLISH PRODUCT BUTTON */}
+          <button
+            type="button"
+            className="action-btn"
+            onClick={addProduct}
             style={{
-              marginTop: "6px",
-
-              opacity: 0.8
+              background: "linear-gradient(135deg, #163923, #285b37)",
+              color: "#fff",
+              border: "none",
+              padding: "16px 36px",
+              borderRadius: "18px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "10px",
+              cursor: "pointer",
+              fontWeight: "700",
+              fontSize: "15px",
+              boxShadow: "0 10px 25px rgba(22, 57, 35, 0.25)",
+              transition: "all 0.25s ease"
             }}
           >
-            Add high-quality products
-            with optimized details and
-            beautiful presentation.
-          </p>
+            <PlusCircle size={20} /> Publish Product to Catalog
+          </button>
+        </div>
 
+        {/* BOTTOM HELP FOOTER */}
+        <div style={{
+          background: "#163923",
+          color: "#fff",
+          padding: "24px 32px",
+          borderRadius: "28px",
+          display: "flex",
+          alignItems: "center",
+          gap: "20px",
+          boxShadow: "0 14px 35px rgba(22, 57, 35, 0.15)"
+        }}>
+          <PackagePlus size={36} color="#a3e635" style={{ flexShrink: 0 }} />
+          <div>
+            <h4 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: "700" }}>
+              Catalog Best Practices
+            </h4>
+            <p style={{ margin: 0, color: "rgba(255, 255, 255, 0.8)", fontSize: "13px", lineHeight: "1.5" }}>
+              Ensure high-resolution images, accurate pricing, and clear health benefits for higher customer conversions.
+            </p>
+          </div>
         </div>
 
       </div>
-
     </div>
   );
 }
 
-/* INPUT STYLE */
-const inputStyle = {
-
-  width: "100%",
-
-  height: "62px",
-
-  padding: "0 18px",
-
-  borderRadius: "18px",
-
-  border: "1px solid #e5e7eb",
-
-  outline: "none",
-
-  background: "#f9fafb",
-
-  fontSize: "16px",
-
-  marginTop: "10px",
-
-  boxSizing: "border-box",
-
-  transition: "0.3s ease",
-
-  fontWeight: "500"
+// STYLES
+const sectionCardStyle = {
+  background: "#fff",
+  borderRadius: "30px",
+  padding: "32px 36px",
+  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.04)",
+  border: "1px solid rgba(22, 57, 35, 0.08)"
 };
 
-/* LABEL STYLE */
+const sectionHeaderStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: "14px",
+  marginBottom: "26px",
+  paddingBottom: "18px",
+  borderBottom: "1px solid #f1f5f9"
+};
+
+const sectionIconStyle = {
+  width: "48px",
+  height: "48px",
+  borderRadius: "16px",
+  background: "linear-gradient(135deg, #163923, #285b37)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "#fff",
+  boxShadow: "0 6px 16px rgba(22, 57, 35, 0.2)"
+};
+
+const sectionTitleStyle = {
+  margin: 0,
+  fontSize: "20px",
+  fontWeight: "800",
+  color: "#163923"
+};
+
+const sectionSubStyle = {
+  margin: "4px 0 0 0",
+  fontSize: "13px",
+  color: "#6b7280"
+};
+
 const labelStyle = {
-
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "6px",
+  fontSize: "13px",
+  fontWeight: "700",
   color: "#374151",
+  marginBottom: "8px"
+};
 
+const inputStyle = {
+  width: "100%",
+  height: "52px",
+  padding: "0 18px",
+  borderRadius: "16px",
+  border: "1.5px solid #e5e7eb",
+  outline: "none",
+  background: "#f9fafb",
+  fontSize: "14px",
+  color: "#0f172a",
   fontWeight: "600",
+  boxSizing: "border-box",
+  transition: "all 0.2s ease"
+};
 
-  fontSize: "14px"
+const addButtonStyle = {
+  background: "rgba(22, 57, 35, 0.06)",
+  color: "#163923",
+  border: "1px solid rgba(22, 57, 35, 0.15)",
+  padding: "8px 16px",
+  borderRadius: "12px",
+  fontSize: "12px",
+  fontWeight: "700",
+  cursor: "pointer",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "6px"
+};
+
+const removeButtonStyle = {
+  background: "#fef2f2",
+  color: "#ef4444",
+  border: "1px solid #fee2e2",
+  width: "44px",
+  height: "44px",
+  borderRadius: "14px",
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  flexShrink: 0
+};
+
+const indexBadgeStyle = {
+  background: "#f1f5f9",
+  color: "#163923",
+  borderRadius: "10px",
+  padding: "4px 10px",
+  fontSize: "12px",
+  fontWeight: "700",
+  minWidth: "28px",
+  textAlign: "center",
+  flexShrink: 0
 };
 
 export default AddProductPanel;

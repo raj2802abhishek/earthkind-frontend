@@ -35,13 +35,13 @@ function Home() {
   const isMedium = viewportWidth >= 900;
 
   const pageShellStyle = {
-    maxWidth: "1760px",
+    maxWidth: "1360px",
     margin: "0 auto",
-    paddingLeft: "20px",
-    paddingRight: "20px",
+    paddingLeft: "clamp(18px, 4vw, 48px)",
+    paddingRight: "clamp(18px, 4vw, 48px)",
   };
 
-  const sectionPadding = isDesktop ? "120px 0" : "84px 0";
+  const sectionPadding = isDesktop ? "28px 0" : "18px 0";
 
   const featuredHighlights = [
     {
@@ -82,13 +82,14 @@ function Home() {
   ];
 
   useEffect(() => {
+    const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
     axios
-      .get(`${import.meta.env.VITE_API_URL}/api/products`)
+      .get(`${API_BASE}/api/products`)
       .then((res) => {
-        setProducts(res.data);
+        setProducts(Array.isArray(res.data) ? res.data : []);
       })
       .catch((err) => {
-        console.log(err);
+        console.log("Home product fetch error:", err);
       });
   }, []);
 
@@ -125,21 +126,17 @@ const featuredGridColumns =
     <div>
       {/* HERO SECTION */}
       <section className="hero-section">
-        <motion.img
-          key={currentHero}
-          initial={{ scale: 1.1, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1.6 }}
-          src={heroSlides[currentHero]}
-          alt="Earthkind Naturals hero"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
+        <div className="hero-img-box">
+          <motion.img
+            key={currentHero}
+            initial={{ scale: 1.05, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 1.2 }}
+            src={heroSlides[currentHero]}
+            alt="Earthkind Naturals hero"
+            className="hero-slide-img"
+          />
+        </div>
 
         <div className="hero-overlay" />
 
@@ -184,41 +181,21 @@ const featuredGridColumns =
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
           >
-           <button
-  className="earth-btn hero-shine-btn"
-  onClick={() => navigate("/shop")}
->
-  Explore Collection
-</button>
+            <button
+              className="earth-btn hero-shine-btn"
+              onClick={() => navigate("/shop")}
+            >
+              Explore Collection
+            </button>
           </motion.div>
         </div>
 
-        <div
-          style={{
-            position: "absolute",
-            bottom: "40px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            gap: "14px",
-            zIndex: 10,
-          }}
-        >
+        <div className="hero-dots-container">
           {heroSlides.map((_, index) => (
             <div
               key={index}
               onClick={() => setCurrentHero(index)}
-              style={{
-                width: currentHero === index ? "36px" : "12px",
-                height: "12px",
-                borderRadius: "999px",
-                background:
-                  currentHero === index
-                    ? "#d8ef7f"
-                    : "rgba(255,255,255,0.5)",
-                transition: "0.4s ease",
-                cursor: "pointer",
-              }}
+              className={`hero-dot-indicator ${currentHero === index ? "active" : ""}`}
             />
           ))}
         </div>
@@ -248,28 +225,28 @@ const featuredGridColumns =
 <section
   className="section"
   id="wellness"
-  style={{ padding: sectionPadding }}
+  style={{ padding: isDesktop ? "65px 0 45px 0" : "36px 0", marginTop: "10px" }}
 >
   <div style={pageShellStyle}>
     <div
       style={{
         display: "grid",
-       gridTemplateColumns: "1fr 1fr",
-gap: isDesktop ? "84px" : "52px",
-        alignItems: "center",
+        gridTemplateColumns: storyGridColumns,
+        gap: isDesktop ? "54px" : "36px",
+        alignItems: "stretch",
       }}
     >
-      <div style={{ maxWidth: "760px" }}>
+      <div style={{ maxWidth: "760px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
         <p className="section-subtitle">Herbal Excellence</p>
 
-        <h2 className="section-title">
+        <h2 className="section-title" style={{ marginTop: "14px" }}>
           A Premium Wellness Experience Rooted In Nature
         </h2>
 
         <p
           className="section-text"
           style={{
-            marginTop: "26px",
+            marginTop: "24px",
             maxWidth: "700px",
           }}
         >
@@ -284,7 +261,7 @@ gap: isDesktop ? "84px" : "52px",
             display: "grid",
             gridTemplateColumns: featuredGridColumns,
             gap: "18px",
-            marginTop: "34px",
+            marginTop: "32px",
           }}
         >
           {featuredHighlights.map((item, index) => (
@@ -297,9 +274,9 @@ gap: isDesktop ? "84px" : "52px",
   transition={{ duration: 0.35 }}
   className="product-card"
   style={{
-    padding: "30px",
-    minHeight: "220px",
-    borderRadius: "30px",
+    padding: "24px",
+    minHeight: "180px",
+    borderRadius: "26px",
     background:
       "linear-gradient(145deg, rgba(255,255,255,0.96), rgba(248,246,241,0.98))",
     border: "1px solid rgba(35,77,44,0.05)",
@@ -332,15 +309,15 @@ gap: isDesktop ? "84px" : "52px",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: "26px",
+      marginBottom: "20px",
       position: "relative",
       zIndex: 2,
     }}
   >
     <div
   style={{
-    width: "64px",
-    height: "64px",
+    width: "56px",
+    height: "56px",
     borderRadius: "50%",
     background:
       "linear-gradient(145deg, rgba(255,255,255,0.9), rgba(247,245,239,0.95))",
@@ -354,7 +331,7 @@ gap: isDesktop ? "84px" : "52px",
 >
   {index === 0 && (
     <Leaf
-      size={28}
+      size={26}
       strokeWidth={1.7}
       color="#35593f"
     />
@@ -362,7 +339,7 @@ gap: isDesktop ? "84px" : "52px",
 
   {index === 1 && (
     <Sprout
-      size={28}
+      size={26}
       strokeWidth={1.7}
       color="#35593f"
     />
@@ -370,7 +347,7 @@ gap: isDesktop ? "84px" : "52px",
 
   {index === 2 && (
     <Nut
-      size={28}
+      size={26}
       strokeWidth={1.7}
       color="#35593f"
     />
@@ -378,7 +355,7 @@ gap: isDesktop ? "84px" : "52px",
 
   {index === 3 && (
     <CupSoda
-      size={28}
+      size={26}
       strokeWidth={1.7}
       color="#35593f"
     />
@@ -401,10 +378,10 @@ gap: isDesktop ? "84px" : "52px",
   <h3
     style={{
       fontFamily: "'Cormorant Garamond', serif",
-      fontSize: "28px",
+      fontSize: "26px",
       color: "#163923",
       lineHeight: "1.1",
-      marginBottom: "16px",
+      marginBottom: "12px",
       position: "relative",
       zIndex: 2,
     }}
@@ -416,8 +393,8 @@ gap: isDesktop ? "84px" : "52px",
   <p
     style={{
       color: "rgba(22,57,35,0.72)",
-      lineHeight: "1.9",
-      fontSize: "15px",
+      lineHeight: "1.7",
+      fontSize: "14.5px",
       position: "relative",
       zIndex: 2,
     }}
@@ -433,9 +410,11 @@ gap: isDesktop ? "84px" : "52px",
         style={{
           position: "relative",
           width: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          height: "100%",
+          minHeight: isDesktop ? "660px" : "540px",
+          borderRadius: isDesktop ? "36px" : "28px",
+          overflow: "hidden",
+          boxShadow: "0 35px 80px rgba(0,0,0,0.12)",
         }}
       >
         <motion.img
@@ -446,10 +425,9 @@ gap: isDesktop ? "84px" : "52px",
           transition={{ duration: 0.8 }}
           style={{
             width: "100%",
-            height: isDesktop ? "990px" : "440px",
+            height: "100%",
+            minHeight: "100%",
             objectFit: "cover",
-            borderRadius: isDesktop ? "42px" : "28px",
-            boxShadow: "0 35px 80px rgba(0,0,0,0.12)",
           }}
         />
 
@@ -459,9 +437,10 @@ gap: isDesktop ? "84px" : "52px",
           transition={{ duration: 0.8, delay: 0.2 }}
           style={{
             position: "absolute",
-           left: isDesktop ? "48px" : "16px",
-top: isDesktop ? "355px" : "32px",
-width: isDesktop ? "390px" : "calc(100% - 32px)",
+            left: isDesktop ? "32px" : "14px",
+            bottom: isDesktop ? "32px" : "14px",
+            width: isDesktop ? "370px" : "calc(100% - 28px)",
+            maxHeight: isDesktop ? "calc(100% - 64px)" : "calc(100% - 28px)",
             zIndex: 5,
           }}
         >
@@ -469,13 +448,14 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
             style={{
               position: "relative",
               overflow: "hidden",
-              borderRadius: "38px",
-              padding: isDesktop ? "30px 30px" : "24px 20px",
-              background: "rgba(255,255,255,0.16)",
-              backdropFilter: "blur(18px)",
-              WebkitBackdropFilter: "blur(18px)",
-              border: "1px solid rgba(255,255,255,0.22)",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.12)",
+              borderRadius: isDesktop ? "32px" : "22px",
+              padding: isDesktop ? "28px 26px" : "18px",
+              background: "rgba(255,255,255,0.24)",
+              backdropFilter: "blur(22px)",
+              WebkitBackdropFilter: "blur(22px)",
+              border: "1px solid rgba(255,255,255,0.32)",
+              boxShadow: "0 25px 60px rgba(0,0,0,0.16)",
+              boxSizing: "border-box",
             }}
           >
             <div
@@ -483,7 +463,7 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
                 position: "absolute",
                 inset: 0,
                 background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.04))",
+                  "linear-gradient(135deg, rgba(255,255,255,0.32), rgba(255,255,255,0.08))",
                 zIndex: 1,
               }}
             />
@@ -493,10 +473,10 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
                 style={{
                   color: "#234d2c",
                   textTransform: "uppercase",
-                  letterSpacing: "4px",
-                  fontSize: "11px",
+                  letterSpacing: "3.5px",
+                  fontSize: isDesktop ? "11px" : "9.5px",
                   fontWeight: 700,
-                  marginBottom: isDesktop ? "28px" : "18px",
+                  marginBottom: isDesktop ? "16px" : "10px",
                 }}
               >
                 Crafted For Modern Living
@@ -506,21 +486,21 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "14px",
-                  marginBottom: isDesktop ? "22px" : "14px",
+                  gap: "12px",
+                  marginBottom: isDesktop ? "16px" : "10px",
                 }}
               >
                 <div
                   style={{
-                    width: "34px",
-                    height: "34px",
+                    width: isDesktop ? "32px" : "24px",
+                    height: isDesktop ? "32px" : "24px",
                     borderRadius: "50%",
                     border: "1px solid rgba(35,77,44,0.18)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     color: "#234d2c",
-                    fontSize: "18px",
+                    fontSize: isDesktop ? "16px" : "12px",
                   }}
                 >
                   🌿
@@ -530,7 +510,7 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
                   style={{
                     flex: 1,
                     height: "1px",
-                    background: "rgba(35,77,44,0.12)",
+                    background: "rgba(35,77,44,0.14)",
                   }}
                 />
               </div>
@@ -538,11 +518,11 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
               <h3
                 style={{
                   fontFamily: "'Cormorant Garamond', serif",
-                  fontSize: isDesktop ? "58px" : "40px",
-                  lineHeight: "0.88",
+                  fontSize: isDesktop ? "52px" : "28px",
+                  lineHeight: "0.95",
                   color: "#163923",
-                  marginBottom: isDesktop ? "28px" : "20px",
-                  letterSpacing: "-2px",
+                  marginBottom: isDesktop ? "18px" : "10px",
+                  letterSpacing: "-1.5px",
                 }}
               >
                 Pure.
@@ -557,21 +537,20 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
                   width: "100%",
                   height: "1px",
                   background: "rgba(35,77,44,0.14)",
-                  marginBottom: isDesktop ? "28px" : "18px",
+                  marginBottom: isDesktop ? "18px" : "10px",
                 }}
               />
 
               <p
                 style={{
-                  color: "rgba(22,57,35,0.86)",
-                  lineHeight: "1.8",
-                  fontSize: "15px",
-                  marginBottom: isDesktop ? "26px" : "18px",
+                  color: "rgba(22,57,35,0.85)",
+                  lineHeight: isDesktop ? "1.6" : "1.35",
+                  fontSize: isDesktop ? "14.5px" : "11.5px",
+                  marginBottom: isDesktop ? "20px" : "12px",
                 }}
               >
                 Premium wellness presentation crafted with refined herbal
-                aesthetics, elegant visual identity, and modern natural
-                luxury.
+                aesthetics, elegant visual identity, and modern natural luxury.
               </p>
 
               <div
@@ -579,6 +558,8 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
                   display: "grid",
                   gridTemplateColumns: "repeat(3, 1fr)",
                   gap: isDesktop ? "10px" : "6px",
+                  paddingTop: isDesktop ? "14px" : "10px",
+                  borderTop: "1px solid rgba(35,77,44,0.14)",
                 }}
               >
                 {[
@@ -606,8 +587,8 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
                   >
                     <div
                       style={{
-                        fontSize: isDesktop ? "24px" : "20px",
-                        marginBottom: isDesktop ? "10px" : "6px",
+                        fontSize: isDesktop ? "20px" : "15px",
+                        marginBottom: "4px",
                       }}
                     >
                       {item.icon}
@@ -616,9 +597,9 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
                     <h4
                       style={{
                         color: "#163923",
-                        fontSize: isDesktop ? "28px" : "22px",
+                        fontSize: isDesktop ? "22px" : "16px",
                         fontWeight: 700,
-                        marginBottom: "4px",
+                        marginBottom: "2px",
                       }}
                     >
                       {item.number}
@@ -627,8 +608,8 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
                     <p
                       style={{
                         color: "rgba(22,57,35,0.72)",
-                        fontSize: "12px",
-                        letterSpacing: "2px",
+                        fontSize: isDesktop ? "10.5px" : "8.5px",
+                        letterSpacing: "1px",
                         textTransform: "uppercase",
                       }}
                     >
@@ -656,7 +637,7 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
                   gridTemplateColumns: categoryIntroColumns,
                   gap: "30px",
                   alignItems: "end",
-                  marginBottom: "52px",
+                  marginBottom: "28px",
                 }}
               >
                 <div style={{ maxWidth: "760px" }}>
@@ -682,7 +663,7 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
                 style={{
                   display: "grid",
                   gridTemplateColumns: categoryGridColumns,
-                  gap: "30px",
+                  gap: isDesktop ? "18px" : "12px",
                   alignItems: "stretch",
                 }}
               >
@@ -708,14 +689,206 @@ width: isDesktop ? "390px" : "calc(100% - 32px)",
         </div>
       </section>
 
+      {/* FEATURED SELECTION SECTION - PLACED DIRECTLY AFTER CATEGORIES FOR MAXIMUM MOBILE VISIBILITY */}
+      <section className="section" style={{ padding: sectionPadding }}>
+        <div style={pageShellStyle}>
+          <div
+            style={{
+              textAlign: "center",
+              marginBottom: isDesktop ? "28px" : "20px",
+            }}
+          >
+            <p className="section-subtitle">Featured Selection</p>
+            <h2 className="section-title">Best Loved Wellness Picks</h2>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: isDesktop ? pillarGridColumns : "repeat(2, minmax(0, 1fr))",
+              gap: isDesktop ? "28px" : "14px",
+              alignItems: "stretch",
+            }}
+          >
+            {categories.map((category, index) => {
+              const featuredProduct = products.find(
+                (item) => item.category === category.title
+              );
+
+              if (!featuredProduct) return null;
+
+              return (
+                <motion.div
+                  key={featuredProduct._id || index}
+                  whileHover={{
+                    y: isDesktop ? -8 : -4,
+                  }}
+                  transition={{
+                    duration: 0.35,
+                  }}
+                  className="product-card"
+                  style={{
+                    overflow: "hidden",
+                    borderRadius: isDesktop ? "26px" : "18px",
+                    background:
+                      "linear-gradient(145deg, #ffffff 0%, #f7f4ee 100%)",
+                    boxShadow:
+                      "0 14px 35px rgba(0,0,0,0.05)",
+                    border:
+                      "1px solid rgba(35,77,44,0.05)",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  {/* IMAGE CONTAINER */}
+                  <div
+                    style={{
+                      position: "relative",
+                      height: isDesktop ? "210px" : "140px",
+                      overflow: "hidden",
+                      background:
+                        "linear-gradient(145deg,#f7f4ee,#eef4ef)",
+                    }}
+                  >
+                    <motion.img
+                      whileHover={{
+                        scale: 1.06,
+                      }}
+                      transition={{
+                        duration: 0.7,
+                      }}
+                      src={featuredProduct.image}
+                      alt={featuredProduct.name}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                        padding: isDesktop ? "16px" : "10px",
+                      }}
+                    />
+
+                    {/* CATEGORY BADGE */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: isDesktop ? "14px" : "8px",
+                        left: isDesktop ? "14px" : "8px",
+                        background: "rgba(255,255,255,0.92)",
+                        backdropFilter: "blur(10px)",
+                        borderRadius: "999px",
+                        padding: isDesktop ? "6px 12px" : "4px 8px",
+                        fontSize: isDesktop ? "10px" : "8.5px",
+                        letterSpacing: isDesktop ? "1.5px" : "1px",
+                        textTransform: "uppercase",
+                        fontWeight: "700",
+                        color: "#163923",
+                      }}
+                    >
+                      {category.title}
+                    </div>
+                  </div>
+
+                  {/* CONTENT */}
+                  <div
+                    style={{
+                      padding: isDesktop ? "20px 18px" : "12px 10px",
+                      display: "flex",
+                      flexDirection: "column",
+                      flex: 1,
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div>
+                      <h3
+                        style={{
+                          fontFamily:
+                            "'Cormorant Garamond', serif",
+                          fontSize: isDesktop ? "26px" : "18px",
+                          lineHeight: isDesktop ? "1.1" : "1.15",
+                          color: "#163923",
+                          marginBottom: isDesktop ? "8px" : "4px",
+                        }}
+                      >
+                        {featuredProduct.name}
+                      </h3>
+
+                      <p
+                        className="section-text"
+                        style={{
+                          marginBottom: isDesktop ? "14px" : "8px",
+                          fontSize: isDesktop ? "13.5px" : "11px",
+                          lineHeight: isDesktop ? "1.5" : "1.35",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        Premium wellness crafted with
+                        nature-inspired ingredients for
+                        refined healthy living.
+                      </p>
+                    </div>
+
+                    {/* PRICE + BUTTON */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: isDesktop ? "12px" : "6px",
+                        marginTop: "auto",
+                        flexWrap: isDesktop ? "nowrap" : "wrap",
+                      }}
+                    >
+                      <h4
+                        style={{
+                          fontFamily:
+                            "'Cormorant Garamond', serif",
+                          fontSize: isDesktop ? "26px" : "20px",
+                          color: "#163923",
+                          margin: 0,
+                          fontWeight: 700,
+                        }}
+                      >
+                        ₹{featuredProduct.price}
+                      </h4>
+
+                      <button
+                        className="earth-btn"
+                        style={{
+                          padding: isDesktop ? "10px 18px" : "7px 12px",
+                          fontSize: isDesktop ? "14px" : "11px",
+                          width: isDesktop ? "auto" : "100%",
+                        }}
+                        onClick={() =>
+                          navigate("/product-details", {
+                            state: {
+                              product: featuredProduct,
+                            },
+                          })
+                        }
+                      >
+                        View Product
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ABOUT SECTION */}
       <section className="section" id="about" style={{ padding: sectionPadding }}>
         <div style={pageShellStyle}>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: isDesktop ? "74px" : "48px",
+              gridTemplateColumns: storyGridColumns,
+              gap: isDesktop ? "74px" : "40px",
               alignItems: "stretch",
             }}
           >
@@ -816,7 +989,7 @@ src={aboutSectionImage}
   style={{
     width: "100%",
     height: "100%",
-    minHeight: "980px",
+    minHeight: isDesktop ? "650px" : "440px",
     objectFit: "cover",
     borderRadius: "34px",
     boxShadow: "0 20px 50px rgba(0,0,0,0.12)",
@@ -845,188 +1018,7 @@ src={aboutSectionImage}
         </div>
       </section>
 
-      {/* FEATURED SECTION */}
-      <section className="section" style={{ padding: sectionPadding }}>
-        <div style={pageShellStyle}>
-          <div
-            style={{
-              textAlign: "center",
-              marginBottom: "54px",
-            }}
-          >
-            <p className="section-subtitle">Featured Selection</p>
-            <h2 className="section-title">Best Loved Wellness Picks</h2>
-          </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: pillarGridColumns,
-              gap: "28px",
-              alignItems: "stretch",
-            }}
-          >
-           {categories.map((category, index) => {
-
-  const featuredProduct = products.find(
-    (item) => item.category === category.title
-  );
-
-  if (!featuredProduct) return null;
-
-  return (
-
-    <motion.div
-      key={featuredProduct._id || index}
-      whileHover={{
-        y: -12,
-      }}
-      transition={{
-        duration: 0.4,
-      }}
-      className="product-card"
-      style={{
-        overflow: "hidden",
-        borderRadius: "34px",
-        background:
-          "linear-gradient(145deg, #ffffff 0%, #f7f4ee 100%)",
-        boxShadow:
-          "0 18px 45px rgba(0,0,0,0.06)",
-        border:
-          "1px solid rgba(35,77,44,0.05)",
-      }}
-    >
-
-      {/* IMAGE */}
-      <div
-        style={{
-          position: "relative",
-          height: "320px",
-          overflow: "hidden",
-          background:
-            "linear-gradient(145deg,#f7f4ee,#eef4ef)",
-        }}
-      >
-
-        <motion.img
-          whileHover={{
-            scale: 1.06,
-          }}
-          transition={{
-            duration: 0.7,
-          }}
-          src={featuredProduct.image}
-          alt={featuredProduct.name}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            padding: "24px",
-          }}
-        />
-
-        {/* CATEGORY BADGE */}
-        <div
-          style={{
-            position: "absolute",
-            top: "20px",
-            left: "20px",
-            background: "rgba(255,255,255,0.9)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "999px",
-            padding: "10px 16px",
-            fontSize: "11px",
-            letterSpacing: "2px",
-            textTransform: "uppercase",
-            fontWeight: "700",
-            color: "#163923",
-          }}
-        >
-          {category.title}
-        </div>
-
-      </div>
-
-      {/* CONTENT */}
-      <div
-        style={{
-          padding: "28px",
-        }}
-      >
-
-        <h3
-          style={{
-            fontFamily:
-              "'Cormorant Garamond', serif",
-            fontSize: "40px",
-            lineHeight: "1",
-            color: "#163923",
-            marginBottom: "14px",
-          }}
-        >
-          {featuredProduct.name}
-        </h3>
-
-        <p
-          className="section-text"
-          style={{
-            marginBottom: "22px",
-            minHeight: "58px",
-          }}
-        >
-          Premium wellness crafted with
-          nature-inspired ingredients for
-          refined healthy living.
-        </p>
-
-        {/* PRICE + BUTTON */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "16px",
-          }}
-        >
-
-          <h4
-            style={{
-              fontFamily:
-                "'Cormorant Garamond', serif",
-              fontSize: "38px",
-              color: "#163923",
-            }}
-          >
-            ₹{featuredProduct.price}
-          </h4>
-
-          <button
-            className="earth-btn"
-            style={{
-              padding: "14px 22px",
-            }}
-            onClick={() =>
-              navigate("/product-details", {
-                state: {
-                  product: featuredProduct,
-                },
-              })
-            }
-          >
-            View Product
-          </button>
-
-        </div>
-
-      </div>
-
-    </motion.div>
-
-  );
-})}
-          </div>
-        </div>
-      </section>
 
       {/* TESTIMONIAL SECTION */}
       <section className="section" style={{ padding: sectionPadding }}>
@@ -1034,7 +1026,7 @@ src={aboutSectionImage}
           <div
             className="product-card"
             style={{
-              padding: "60px 40px",
+              padding: isDesktop ? "36px 30px" : "24px 16px",
               textAlign: "center",
               background:
                 "linear-gradient(145deg, #f7f4ee 0%, #edf3ef 100%)",
@@ -1091,7 +1083,7 @@ src={aboutSectionImage}
 
     borderRadius: "30px",
 
-    padding: "84px 44px",
+    padding: isDesktop ? "44px 36px" : "28px 18px",
 
     background: `
       radial-gradient(

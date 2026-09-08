@@ -236,14 +236,13 @@ const productPrices = {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/products`
-      );
-      
-      setProducts(res.data);
-      console.log("PRODUCTS:", res.data);
+      const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const res = await axios.get(`${API_BASE}/api/products`);
+      const list = Array.isArray(res.data) ? res.data : [];
+      setProducts(list);
+      console.log("PRODUCTS LOADED:", list.length);
     } catch (error) {
-      console.log(error);
+      console.log("Error fetching products:", error);
     }
   };
 
@@ -503,200 +502,136 @@ updatedWishlist.push({
 `;
 
 const scrollReviews = (direction) => {
-
-  const container =
-    document.getElementById(
-      "reviews-slider"
-    );
-
+  const container = document.getElementById("reviews-slider");
   if (!container) return;
 
-  const scrollAmount = 380;
+  const scrollAmount = container.clientWidth;
 
   container.scrollBy({
-    left:
-      direction === "left"
-        ? -scrollAmount
-        : scrollAmount,
-
+    left: direction === "left" ? -scrollAmount : scrollAmount,
     behavior: "smooth"
   });
 };
 
+  const filteredProducts = (products || [])
+    .filter((product) =>
+      (product.name || "").toLowerCase().includes((search || "").toLowerCase().trim())
+    )
+    .filter((product) =>
+      selectedCategory === "All"
+        ? true
+        : (product.category || "").toLowerCase().trim() === selectedCategory.toLowerCase().trim() ||
+          (product.category || "").toLowerCase().includes(selectedCategory.toLowerCase())
+    );
+
   return (
-  <div style={{ padding: "20px" }}>
+  <div className="shop-page-container">
 
     <style>
   {shineAnimation}
 </style>
-   <div
-  style={{
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "15px",
-    marginBottom: "10px"
-  }}
->
-  <h1
-    style={{
-      fontSize: "56px",
-      color: "#234d2c",
-      margin: 0,
-      fontFamily: "Georgia, serif"
-    }}
-  >
-    Shop Page
+   <div className="shop-title-header">
+  <h1 className="shop-main-title">
+    Shop Collection
   </h1>
 
-  <FiShoppingBag
-    style={{
-      fontSize: "42px",
-      color: "#234d2c",
-      strokeWidth: 2.2
-    }}
-  />
+  <FiShoppingBag className="shop-bag-icon" />
 </div>
 
-<p
-  style={{
-    fontSize: "24px",
-    color: "#5c5c5c",
-    marginTop: "20px",
-    marginBottom: "50px",
-    fontWeight: "400",
-    letterSpacing: "1px",
-    fontFamily: "Helvetica, sans-serif",
-    textAlign: "center"
-  }}
->
-  All Herbal Products
+<p className="shop-subtitle-text">
+  Pure Herbal & Wellness Essentials
 </p>
 
-    <input
-  type="text"
-  placeholder="Search products..."
-  value={search}
-  onChange={(e) => setSearch(e.target.value)}
-  style={{
-  width: "80%",
-  maxWidth: "900px",
-  padding: "16px 20px",
-  margin: "0 auto 40px auto",
-  display: "block",
-  border: "1px solid #ddd",
-  borderRadius: "14px",
-  fontSize: "17px",
-  outline: "none",
-  background: "#fff"
-}}
-/>
-     <div
-  style={{
-    position: "relative",
-    width: "250px",
-    margin: "0 auto 40px auto"
-  }}
->
+    {/* SEARCH & FILTER CONTROLS */}
+    <div className="shop-controls-wrapper">
+      <input
+        type="text"
+        placeholder="Search products by name..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="shop-search-input"
+      />
 
-  <div
-    style={{
-      position: "absolute",
-      top: 0,
-      left: "-120%",
-      width: "80px",
-      height: "100%",
-      background:
-        "linear-gradient(90deg,transparent,rgba(255,255,255,0.7),transparent)",
-      transform: "skewX(-20deg)",
-      animation:
-        "shine 3s infinite",
-      zIndex: 2,
-      pointerEvents: "none"
-    }}
-  ></div>
+      {/* CATEGORY SELECT DROPDOWN */}
+      <div className="shop-category-select-box">
+        <div className="shop-select-shine" />
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="shop-category-select"
+        >
+          <option value="All">All Categories</option>
+          <option value="Herbal Powders">Herbal Powders</option>
+          <option value="Natural Seeds">Natural Seeds</option>
+          <option value="Herbal Tea">Herbal Tea</option>
+          <option value="Nuts & Dry Fruits">Nuts & Dry Fruits</option>
+        </select>
+      </div>
+    </div>
 
-  <select
-    value={selectedCategory}
-    onChange={(e) =>
-      setSelectedCategory(e.target.value)
-    }
+    {/* HORIZONTAL CATEGORY PILLS FOR QUICK TOUCH SELECTION */}
+    <div className="shop-category-pills">
+      {[
+        { label: "All", value: "All" },
+        { label: "Herbal Powders", value: "Herbal Powders" },
+        { label: "Natural Seeds", value: "Natural Seeds" },
+        { label: "Herbal Tea", value: "Herbal Tea" },
+        { label: "Nuts & Dry Fruits", value: "Nuts & Dry Fruits" },
+      ].map((cat) => (
+        <button
+          key={cat.value}
+          onClick={() => setSelectedCategory(cat.value)}
+          className={`category-pill-btn ${selectedCategory === cat.value ? "active" : ""}`}
+        >
+          {cat.label}
+        </button>
+      ))}
+    </div>
 
-    style={{
-      width: "100%",
-      padding: "14px",
-      display: "block",
-      border: "1px solid #ddd",
-      borderRadius: "12px",
-      fontSize: "16px",
-      outline: "none",
-      position: "relative",
-      overflow: "hidden",
-      background:
-        "linear-gradient(145deg,#ffffff,#f4f6f3)",
-      boxShadow:
-        "0 6px 18px rgba(0,0,0,0.06)",
-      transition: "0.3s ease"
-    }}
-  >
-
-    <option value="All">
-      All Categories
-    </option>
-
-    <option value="Herbal Powders">
-      Herbal Powders
-    </option>
-
-    <option value="Natural Seeds">
-      Natural Seeds
-    </option>
-
-    <option value="Herbal Tea">
-      Herbal Tea
-    </option>
-
-    <option value="Nuts & Dry Fruits">
-      Nuts & Dry Fruits
-    </option>
-
-  </select>
-
-</div>
-
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-        gap: "20px",
-        marginTop: "30px"
-      }}
-    >
-      {products
-  .filter((product) =>
-    product.name.toLowerCase().includes(search.toLowerCase())
-  )
-  .filter((product) =>
-    selectedCategory === "All"
-      ? true
-      :product.category
-  .toLowerCase()
-  .trim() ===
-selectedCategory
-  .toLowerCase()
-  .trim()
-  )
-  .map((product) => (
+    {/* RESPONSIVE PRODUCT GRID */}
+    <div className="shop-product-grid">
+      {filteredProducts.length === 0 ? (
         <div
-          key={product._id}
           style={{
-            border: "1px solid #ddd",
-            borderRadius: "12px",
-            padding: "20px",
-            background: "#fff",
-            textAlign: "center"
+            gridColumn: "1 / -1",
+            textAlign: "center",
+            padding: "80px 20px",
+            background: "rgba(255,255,255,0.7)",
+            borderRadius: "24px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.04)"
           }}
         >
+          <h3 style={{ fontSize: "22px", color: "#163923", marginBottom: "10px" }}>
+            No products found 🌿
+          </h3>
+          <p style={{ color: "#666", marginBottom: "20px" }}>
+            Try selecting "All Categories" or adjusting your search term.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedCategory("All");
+              setSearch("");
+            }}
+            style={{
+              padding: "12px 24px",
+              borderRadius: "14px",
+              background: "#163923",
+              color: "#fff",
+              border: "none",
+              fontWeight: "600",
+              cursor: "pointer"
+            }}
+          >
+            Show All Products
+          </button>
+        </div>
+      ) : (
+        filteredProducts.map((product) => (
+          <div
+            key={product._id}
+            className="shop-product-card"
+          >
   <img
   className="product-image"
   src={
@@ -852,20 +787,21 @@ selectedCategory
   )}
 
 </div>
-          <h3>{product.name}</h3>
+          <h3 className="product-card-title">{product.name}</h3>
         <div
+  className="product-card-stock"
   style={{
     display: "inline-flex",
     alignItems: "center",
-    gap: "8px",
+    gap: "6px",
 
-    marginBottom: "14px",
+    marginBottom: "8px",
 
-    padding: "7px 16px",
+    padding: "5px 12px",
 
     borderRadius: "999px",
 
-    fontSize: "12px",
+    fontSize: "11px",
 
     fontWeight: "700",
 
@@ -884,7 +820,7 @@ selectedCategory
         : "1px solid rgba(22,101,52,0.10)",
 
     boxShadow:
-      "0 4px 14px rgba(0,0,0,0.04)",
+      "0 2px 8px rgba(0,0,0,0.03)",
 
     color:
       product.stock === 0
@@ -901,11 +837,12 @@ selectedCategory
     : "✦ Freshly Available"}
 </div>
           <p
+  className="product-card-price"
   style={{
-    fontSize: "25px",
-    fontWeight: "700",
-    color: "#66a473",
-    marginBottom: "8px"
+    fontSize: "22px",
+    fontWeight: "800",
+    color: "#163923",
+    marginBottom: "4px"
   }}
 >
   ₹{
@@ -928,9 +865,10 @@ selectedCategory
 
   }
 </p>
-          <p>{product.category}</p>
+          <p className="product-card-category">{product.category}</p>
           
          <button
+  className="product-card-details-btn"
   onClick={() =>
   navigate("/product-details", {
     state: {
@@ -981,14 +919,15 @@ selectedCategory
 
   style={{
     width: "100%",
-    padding: "10px",
+    padding: "8px 10px",
     background: "#fff",
     color: "#2d5a27",
-    border: "2px solid #2d5a27",
+    border: "1.5px solid #2d5a27",
     borderRadius: "8px",
     cursor: "pointer",
-    marginBottom: "10px",
+    marginBottom: "6px",
     fontWeight: "bold",
+    fontSize: "13px",
 
     transition:
       "all 0.35s ease",
@@ -1004,6 +943,7 @@ selectedCategory
   
 
 <button
+  className="product-card-add-btn"
   disabled={product.stock === 0}
   onClick={(e) =>
   addToCart(
@@ -1039,7 +979,7 @@ selectedCategory
   )
 }
   style={{
-  marginTop: "10px",
+  marginTop: "4px",
 
   background:
     product.stock === 0
@@ -1050,12 +990,12 @@ selectedCategory
 
   border:
     product.stock === 0
-      ? "2px solid #d1d5db"
-      : "2px solid #1f4d2e",
+      ? "1.5px solid #d1d5db"
+      : "1.5px solid #1f4d2e",
 
-  padding: "12px 18px",
+  padding: "10px 14px",
 
-  borderRadius: "10px",
+  borderRadius: "8px",
 
   cursor:
     product.stock === 0
@@ -1068,6 +1008,7 @@ selectedCategory
       : 1,
 
   fontWeight: "600",
+  fontSize: "13px",
 
   transition: "0.3s ease"
 }}
@@ -1085,10 +1026,11 @@ selectedCategory
   : "Add to Cart"}
 </button>
         </div>
-      ))}
-    
+      ))
+    )}
 </div>
 <div
+  className="shop-why-banner"
   style={{
     marginTop: "100px",
     padding: "80px 55px",
@@ -1155,14 +1097,13 @@ selectedCategory
   </p>
 
  <h2
-  className="section-title"
+  className="section-title shop-why-title"
   style={{
     textAlign: "center",
     width: "100%",
     margin: "0 auto",
 
-    whiteSpace: "nowrap",
-    fontSize: "clamp(52px, 4vw, 80px)"
+    fontSize: "clamp(32px, 4vw, 80px)"
   }}
 >
   Why Choose Earthkind Naturals
@@ -1184,6 +1125,7 @@ selectedCategory
  
 
   <div
+    className="shop-why-grid"
     style={{
       display: "grid",
       gridTemplateColumns:
@@ -1241,6 +1183,7 @@ selectedCategory
 
       <div
         key={index}
+        className="shop-why-card"
 
         style={{
           background:
@@ -1337,6 +1280,7 @@ selectedCategory
 
 </div>
 <div
+  className="shop-reviews-section"
   style={{
     marginTop: "110px",
     position: "relative"
@@ -1389,6 +1333,7 @@ selectedCategory
 
   {/* LEFT BUTTON */}
   <button
+    className="shop-review-nav-btn shop-review-left"
     onClick={() =>
       scrollReviews("left")
     }
@@ -1417,6 +1362,7 @@ selectedCategory
 
   {/* RIGHT BUTTON */}
   <button
+    className="shop-review-nav-btn shop-review-right"
     onClick={() =>
       scrollReviews("right")
     }
@@ -1446,6 +1392,7 @@ selectedCategory
   {/* REVIEWS SLIDER */}
   <div
     id="reviews-slider"
+    className="shop-reviews-slider"
 
     style={{
       display: "flex",
@@ -1525,6 +1472,7 @@ selectedCategory
 
       <div
         key={index}
+        className="shop-review-card"
 
         style={{
           minWidth: "320px",
