@@ -630,7 +630,8 @@ function Wishlist() {
                   borderRadius: "16px",
                   display: "flex",
                   justifyContent: "center",
-                  alignItems: "center"
+                  alignItems: "center",
+                  position: "relative"
                 }}
               >
                 <img
@@ -655,6 +656,40 @@ function Wishlist() {
                     cursor: "pointer"
                   }}
                 />
+
+                {/* MOBILE QUICK ACTIONS (SHARE & DELETE BELOW/INSIDE IMAGE ON MOBILE) */}
+                <div className="wishlist-img-quick-actions">
+                  <button
+                    className="wishlist-btn-share-mobile"
+                    onClick={() => {
+                      if (navigator.share) {
+                        navigator.share({
+                          title: item.name,
+                          text: `${item.name} - ₹${item.price}`,
+                          url: window.location.origin + "/shop"
+                        });
+                      } else {
+                        alert("Sharing not supported");
+                      }
+                    }}
+                    title="Share"
+                  >
+                    <FiShare2 />
+                  </button>
+                  <button
+                    className="wishlist-btn-remove-mobile"
+                    onClick={(e) => {
+                      e.currentTarget.innerHTML = "💔";
+                      e.currentTarget.style.transform = "scale(1.3)";
+                      setTimeout(() => {
+                        removeFromWishlist(item._id);
+                      }, 250);
+                    }}
+                    title="Remove"
+                  >
+                    <FiTrash2 />
+                  </button>
+                </div>
               </div>
 
               {/* CONTENT */}
@@ -924,7 +959,7 @@ function Wishlist() {
 
                   {/* SHARE */}
                   <button
-                    className="wishlist-btn-share"
+                    className="wishlist-btn-share wishlist-desktop-only-action"
                     onClick={() => {
                       if (navigator.share) {
                         navigator.share({
@@ -943,7 +978,7 @@ function Wishlist() {
 
                   {/* REMOVE */}
                   <button
-                    className="wishlist-btn-remove"
+                    className="wishlist-btn-remove wishlist-desktop-only-action"
                     onClick={(e) => {
 
                       e.currentTarget.innerHTML = "💔";
