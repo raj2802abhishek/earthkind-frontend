@@ -26,6 +26,33 @@ function Home() {
   const [activeCategory, setActiveCategory] = useState(null);
   const [currentHero, setCurrentHero] = useState(0);
 
+  // HERO TOUCH SWIPE GESTURE HANDLERS (FOR MOBILE)
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [touchEndX, setTouchEndX] = useState(null);
+  const minSwipeDistance = 35;
+
+  const handleTouchStart = (e) => {
+    setTouchEndX(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+    const distance = touchStartX - touchEndX;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      setCurrentHero((prev) => (prev === heroSlides.length - 1 ? 0 : prev + 1));
+    } else if (isRightSwipe) {
+      setCurrentHero((prev) => (prev === 0 ? heroSlides.length - 1 : prev - 1));
+    }
+  };
+
   const heroSlides = [hero1, hero2, hero3];
 
   const viewportWidth =
@@ -124,8 +151,14 @@ const featuredGridColumns =
 
   return (
     <div>
-      {/* HERO SECTION */}
-      <section className="hero-section">
+      {/* HERO SECTION WITH MOBILE TOUCH SWIPE NAVIGATION */}
+      <section
+        className="hero-section"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ touchAction: "pan-y" }}
+      >
         <div className="hero-img-box">
           <motion.img
             key={currentHero}
