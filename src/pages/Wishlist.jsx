@@ -779,6 +779,7 @@ function Wishlist() {
                 </h2>
 
                 <p
+                  className="wishlist-item-desc"
                   style={{
                     color: "#666",
                     lineHeight: "1.7",
@@ -786,9 +787,6 @@ function Wishlist() {
                   }}
                 >
                   {productDescription}
-
-
-
                 </p>
 
                 <h3
