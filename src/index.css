@@ -2196,19 +2196,19 @@ RESPONSIVE MEDIA QUERIES
   }
 
   .earth-navbar .nav-logo {
-    height: 62px !important;
-    max-height: 62px !important;
+    height: 44px !important;
+    max-height: 44px !important;
     transition: transform 0.3s ease !important;
   }
 
   .nav-actions {
-    gap: 10px !important;
+    gap: 8px !important;
     align-items: center !important;
   }
 
-  .nav-actions>div:not(.mobile-menu-btn) {
-    width: 38px !important;
-    height: 38px !important;
+  .nav-actions > div:not(.mobile-menu-btn) {
+    width: 36px !important;
+    height: 36px !important;
     border-radius: 50% !important;
     background: rgba(35, 77, 44, 0.06) !important;
     transition: all 0.3s ease !important;
@@ -2217,15 +2217,13 @@ RESPONSIVE MEDIA QUERIES
     justify-content: center !important;
   }
 
-  .earth-navbar.scrolled .nav-actions>div:not(.mobile-menu-btn) {
+  .earth-navbar.scrolled .nav-actions > div:not(.mobile-menu-btn) {
     background: rgba(255, 255, 255, 0.12) !important;
   }
 
   .nav-actions > div.header-user-profile-wrapper,
   .header-user-profile-wrapper {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    display: none !important;
   }
 
   .mobile-menu-btn {
