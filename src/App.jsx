@@ -338,6 +338,17 @@ function App() {
               )}
             </div>
 
+            {user?.isAdmin && (
+              <NavLink
+                to="/admin"
+                className="nav-link mobile-drawer-admin-link"
+                style={{ color: "#d8ef7f", fontWeight: "700" }}
+                onClick={() => setMobileNav(false)}
+              >
+                🛡️ {t("adminDashboard", "Admin Dashboard")}
+              </NavLink>
+            )}
+
             <NavLink
               to="/"
               className="nav-link"

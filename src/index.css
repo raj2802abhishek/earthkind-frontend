@@ -217,7 +217,7 @@ PREMIUM NAVBAR
 }
 
 .mobile-menu-btn {
-  display: none !important;
+  display: none;
 }
 
 .nav-links {
@@ -2014,18 +2014,58 @@ RESPONSIVE MEDIA QUERIES
     margin-top: 2px;
   }
 
+  .earth-navbar {
+    padding: 12px clamp(16px, 3vw, 28px) !important;
+    box-sizing: border-box !important;
+    max-width: 100vw !important;
+  }
+
   .mobile-menu-btn {
-    display: flex;
+    display: flex !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 12px !important;
+    background: rgba(35, 77, 44, 0.08) !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 4px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    flex-shrink: 0 !important;
+  }
+
+  .earth-navbar.scrolled .mobile-menu-btn {
+    background: rgba(255, 255, 255, 0.16) !important;
+  }
+
+  .mobile-menu-btn span {
+    display: block !important;
+    width: 18px !important;
+    height: 2px !important;
+    border-radius: 2px !important;
+    transition: all 0.3s ease !important;
   }
 
   .nav-logo {
-    max-height: 54px;
+    max-height: 52px;
+    height: 52px !important;
     width: auto;
     object-fit: contain;
+    flex-shrink: 0;
   }
 
   .nav-actions {
-    gap: 14px;
+    gap: clamp(8px, 1.4vw, 14px);
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .nav-admin-btn {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+    white-space: nowrap !important;
   }
 
   .nav-spacer {
@@ -6227,13 +6267,13 @@ HEADER SEARCH BAR STYLES
 /* RESPONSIVE MEDIA QUERIES FOR SEARCH BAR */
 @media (max-width: 1024px) {
   .search-input-wrapper {
-    width: 180px;
+    width: clamp(140px, 16vw, 170px);
   }
   .search-input-wrapper:focus-within {
-    width: 220px;
+    width: clamp(170px, 22vw, 200px);
   }
   .search-dropdown-menu {
-    width: 320px;
+    width: min(320px, 90vw);
     right: 0;
   }
 }
