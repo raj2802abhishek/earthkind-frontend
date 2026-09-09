@@ -352,69 +352,17 @@ function Wishlist() {
   };
 
   return (
-    <div
-      className="wishlist-page-container"
-      style={{
-        padding: "30px 40px 80px 40px",
-        width: "100%",
-        maxWidth: "1200px",
-        margin: "0 auto",
-        boxSizing: "border-box"
-      }}
-    >
-      <div
-        className="wishlist-header-box"
-        style={{
-          textAlign: "center",
-          marginTop: "5px",
-          marginBottom: "50px"
-        }}
-      >
-        <div
-          className="wishlist-title-row"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "14px",
-            marginBottom: "14px"
-          }}
-        >
-          <h1
-            className="wishlist-title"
-            style={{
-              fontSize: "56px",
-              color: "#234d2c",
-              margin: 0,
-              fontFamily: "Georgia, serif",
-            }}
-          >
+    <div className="wishlist-page-container">
+      <div className="wishlist-header-box">
+        <div className="shop-title-header">
+          <h1 className="shop-main-title">
             Wishlist
           </h1>
 
-          <FiHeart
-            className="wishlist-icon"
-            style={{
-              fontSize: "42px",
-              color: "#234d2c",
-              strokeWidth: 2.1
-            }}
-          />
+          <FiHeart className="shop-bag-icon" />
         </div>
 
-        <p
-          className="wishlist-subtitle"
-          style={{
-            fontSize: "24px",
-            color: "#5c5c5c",
-            marginTop: "8px",
-            marginBottom: "0px",
-            fontWeight: "400",
-            letterSpacing: "1px",
-            fontFamily: "Helvetica, sans-serif",
-            textAlign: "center"
-          }}
-        >
+        <p className="shop-subtitle-text">
           Your Curated Wellness Favorites
         </p>
       </div>

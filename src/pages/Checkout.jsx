@@ -705,23 +705,30 @@ function Checkout() {
         </div>
       )}
 
-      {/* HEADER BANNER */}
-      <div className="checkout-header-banner">
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "6px" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(255, 255, 255, 0.15)", padding: "4px 10px", borderRadius: "999px", fontSize: "10px", fontWeight: "700", letterSpacing: "0.4px" }}>
-              <ShieldCheck size={12} color="#a3e635" /> 256-BIT ENCRYPTED
-            </div>
+      {/* HEADER MATCHING SHOP PAGE DESIGN */}
+      <div className="checkout-title-section">
+        <div className="shop-title-header">
+          <h1 className="shop-main-title">
+            Checkout
+          </h1>
 
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(255, 255, 255, 0.12)", padding: "4px 10px", borderRadius: "999px", border: "1px solid rgba(255, 255, 255, 0.18)" }}>
-              <Truck size={13} color="#a3e635" />
-              <span style={{ fontSize: "11px", fontWeight: "700" }}>{deliveryCharge === 0 ? "FREE Express Delivery" : "Delivery ₹50"}</span>
-            </div>
+          <CreditCard className="shop-bag-icon" />
+        </div>
+
+        <p className="shop-subtitle-text">
+          Fast, Secure & Encrypted Order Completion
+        </p>
+
+        {/* SECURITY & DELIVERY BADGES */}
+        <div className="checkout-badges-row">
+          <div className="checkout-badge">
+            <ShieldCheck size={14} color="#163923" /> 256-BIT ENCRYPTED
           </div>
 
-          <h1 className="checkout-header-title">
-            Express Checkout ✨
-          </h1>
+          <div className="checkout-badge">
+            <Truck size={14} color="#163923" />
+            <span>{deliveryCharge === 0 ? "FREE Express Delivery" : "Delivery ₹50"}</span>
+          </div>
         </div>
       </div>
 
