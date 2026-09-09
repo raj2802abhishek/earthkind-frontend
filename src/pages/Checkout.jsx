@@ -367,6 +367,16 @@ function Checkout() {
 
   // PLACE ORDER HANDLER
   const handlePlaceOrder = async () => {
+    const token = localStorage.getItem("token");
+    const currentUser = JSON.parse(localStorage.getItem("user")) || null;
+
+    if (!token && !currentUser) {
+      toast.error("Please log in to place your order 🔒");
+      localStorage.setItem("redirectAfterLogin", "/checkout");
+      navigate("/login", { state: { redirectTo: "/checkout" } });
+      return;
+    }
+
     if (!validateCheckout()) return;
 
     // Active address resolution

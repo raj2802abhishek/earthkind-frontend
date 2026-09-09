@@ -56,6 +56,18 @@ function AuthModal({ close }) {
     setTimer(0);
   };
 
+  const handlePostAuthNavigate = (userData) => {
+    const redirectPath = localStorage.getItem("redirectAfterLogin");
+    localStorage.removeItem("redirectAfterLogin");
+    if (userData?.isAdmin) {
+      navigate("/admin");
+    } else if (redirectPath) {
+      navigate(redirectPath);
+    } else {
+      navigate("/account");
+    }
+  };
+
   // ---------------- EMAIL LOGIN ----------------
   const handleEmailLogin = async () => {
     setLoading(true);
@@ -81,11 +93,7 @@ function AuthModal({ close }) {
       setTimeout(() => {
         resetModal();
         close();
-        if (res.data.user?.isAdmin) {
-          navigate("/admin");
-        } else {
-          navigate("/account");
-        }
+        handlePostAuthNavigate(res.data.user);
       }, 1000);
 
     } catch (error) {
@@ -125,11 +133,7 @@ function AuthModal({ close }) {
       setTimeout(() => {
         resetModal();
         close();
-        if (res.data.user?.isAdmin) {
-          navigate("/admin");
-        } else {
-          navigate("/account");
-        }
+        handlePostAuthNavigate(res.data.user);
       }, 1000);
 
     } catch (error) {
@@ -167,11 +171,7 @@ function AuthModal({ close }) {
       setTimeout(() => {
         resetModal();
         close();
-        if (res.data.user?.isAdmin) {
-          navigate("/admin");
-        } else {
-          navigate("/account");
-        }
+        handlePostAuthNavigate(res.data.user);
       }, 1000);
 
     } catch (err) {
@@ -213,11 +213,7 @@ function AuthModal({ close }) {
       setTimeout(() => {
         resetModal();
         close();
-        if (res.data.user?.isAdmin) {
-          navigate("/admin");
-        } else {
-          navigate("/account");
-        }
+        handlePostAuthNavigate(res.data.user);
       }, 1200);
 
     } catch (err) {

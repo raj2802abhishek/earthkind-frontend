@@ -67,6 +67,18 @@ function Login({ defaultMode = "login" }) {
 
   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+  const handlePostAuthNavigate = (userData) => {
+    const redirectPath = location.state?.redirectTo || localStorage.getItem("redirectAfterLogin");
+    localStorage.removeItem("redirectAfterLogin");
+    if (userData?.isAdmin) {
+      navigate("/admin");
+    } else if (redirectPath) {
+      navigate(redirectPath);
+    } else {
+      navigate("/account");
+    }
+  };
+
   // Handle Direct Phone Login / Register (No OTP step)
   const handleSendPhoneOTP = async (e) => {
     if (e) e.preventDefault();
@@ -98,11 +110,7 @@ function Login({ defaultMode = "login" }) {
 
       toast.success(res.data.message || msg);
 
-      if (res.data.user?.isAdmin) {
-        navigate("/admin");
-      } else {
-        navigate("/account");
-      }
+      handlePostAuthNavigate(res.data.user);
     } catch (error) {
       toast.error(error.response?.data?.message || "Phone login failed ❌");
     } finally {
@@ -136,11 +144,7 @@ function Login({ defaultMode = "login" }) {
 
       toast.success(res.data.message || msg);
 
-      if (res.data.user?.isAdmin) {
-        navigate("/admin");
-      } else {
-        navigate("/account");
-      }
+      handlePostAuthNavigate(res.data.user);
     } catch (error) {
       toast.error(error.response?.data?.message || "Invalid OTP ❌");
     } finally {
@@ -204,11 +208,7 @@ function Login({ defaultMode = "login" }) {
 
       toast.success(res.data.message || successMsg);
 
-      if (res.data.user?.isAdmin) {
-        navigate("/admin");
-      } else {
-        navigate("/account");
-      }
+      handlePostAuthNavigate(res.data.user);
 
     } catch (error) {
       toast.error(error.response?.data?.message || (mode === "register" ? "Registration failed ❌" : "Login failed ❌"));
