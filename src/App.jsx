@@ -68,6 +68,31 @@ function App() {
       setUser(JSON.parse(localStorage.getItem("user")));
     };
 
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.user) {
+              const currentLocal = JSON.parse(localStorage.getItem("user") || "{}");
+              const mergedUser = { ...currentLocal, ...data.user };
+              localStorage.setItem("user", JSON.stringify(mergedUser));
+              setUser(mergedUser);
+            }
+          }
+        } catch (err) {
+          console.log("Error syncing user profile on refresh:", err);
+        }
+      }
+    };
+
+    updateUser();
+    fetchUserProfile();
+
     window.addEventListener("userChanged", updateUser);
 
     return () => {
@@ -301,9 +326,9 @@ function App() {
             >
               {user ? (
                 <>
-                  {user.profileImage ? (
+                  {(user.profileImage || user.profilePic || user.avatar || user.image) ? (
                     <img
-                      src={user.profileImage}
+                      src={user.profileImage || user.profilePic || user.avatar || user.image}
                       alt="User Profile"
                       className="mobile-drawer-avatar"
                     />
@@ -602,9 +627,9 @@ function App() {
                     transition: "all 0.25s ease"
                   }}
                 >
-                  {user.profileImage ? (
+                  {(user.profileImage || user.profilePic || user.avatar || user.image) ? (
                     <img
-                      src={user.profileImage}
+                      src={user.profileImage || user.profilePic || user.avatar || user.image}
                       alt="avatar"
                       style={{
                         width: "22px",
@@ -1044,15 +1069,25 @@ function App() {
       <ToastContainer
         position="top-right"
         autoClose={2000}
-        style={{ top: "90px" }}
+        style={{ top: "20px", zIndex: 99999999 }}
       />
 
       <Toaster
         position="top-right"
         reverseOrder={false}
         containerStyle={{
-          top: 90,
-          right: 20
+          top: 20,
+          right: 20,
+          zIndex: 99999999
+        }}
+        toastOptions={{
+          style: {
+            zIndex: 99999999,
+            borderRadius: "16px",
+            background: "linear-gradient(135deg, #1f4d2e, #163822)",
+            color: "#fff",
+            fontWeight: "600"
+          }
         }}
       />
 

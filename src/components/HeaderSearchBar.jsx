@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { FiSearch, FiX, FiShoppingCart, FiArrowRight } from "react-icons/fi";
+import { FiSearch, FiX, FiShoppingCart, FiArrowRight, FiTrendingUp, FiGrid } from "react-icons/fi";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -145,21 +146,44 @@ const DEFAULT_PRODUCTS = [
   }
 ];
 
+const TRENDING_SEARCHES = [
+  "Moringa Powder",
+  "Beetroot Powder",
+  "Amla Powder",
+  "Multani Mitti",
+  "Chia Seeds",
+  "Rose Powder"
+];
+
+const POPULAR_CATEGORIES = [
+  "Herbal Powders",
+  "Natural Seeds",
+  "Nuts & Dry Fruits",
+  "Herbal Tea"
+];
+
 function HeaderSearchBar({ navbarScrolled, navTextColor }) {
   const navigate = useNavigate();
-  const searchRef = useRef(null);
   const inputRef = useRef(null);
   const [query, setQuery] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
-  const [isExpandedMobile, setIsExpandedMobile] = useState(false);
+  const [addedProductId, setAddedProductId] = useState(null);
 
-  // Auto-focus search input when expanded on mobile
+  // Auto-focus input when modal opens & handle body scroll lock
   useEffect(() => {
-    if (isExpandedMobile && inputRef.current) {
-      inputRef.current.focus();
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+      setTimeout(() => {
+        if (inputRef.current) inputRef.current.focus();
+      }, 100);
+    } else {
+      document.body.style.overflow = "";
     }
-  }, [isExpandedMobile]);
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isModalOpen]);
 
   // Fetch products from backend or use fallback
   useEffect(() => {
@@ -169,7 +193,6 @@ function HeaderSearchBar({ navbarScrolled, navTextColor }) {
           `${import.meta.env.VITE_API_URL}/api/products`
         );
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-          // Merge with fallbacks if needed so images match
           const merged = res.data.map((prod) => {
             const fallbackMatch = DEFAULT_PRODUCTS.find(
               (dp) => dp.name.toLowerCase() === prod.name.toLowerCase()
@@ -190,17 +213,6 @@ function HeaderSearchBar({ navbarScrolled, navTextColor }) {
     fetchProducts();
   }, []);
 
-  // Click outside listener
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   // Filter matching products
   const matchingProducts = query.trim()
     ? products.filter(
@@ -210,19 +222,13 @@ function HeaderSearchBar({ navbarScrolled, navTextColor }) {
       )
     : [];
 
-  const handleInputChange = (e) => {
-    setQuery(e.target.value);
-    if (e.target.value.trim().length > 0) {
-      setIsOpen(true);
-    } else {
-      setIsOpen(false);
-    }
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   const handleSelectProduct = (product) => {
-    setIsOpen(false);
+    setIsModalOpen(false);
     setQuery("");
-    setIsExpandedMobile(false);
     navigate("/product-details", {
       state: {
         product: {
@@ -256,13 +262,19 @@ function HeaderSearchBar({ navbarScrolled, navTextColor }) {
     localStorage.setItem("cart", JSON.stringify(existingCart));
     window.dispatchEvent(new Event("cartUpdated"));
 
+    setAddedProductId(product._id);
+    setTimeout(() => setAddedProductId(null), 1800);
+
     toast.success(`${product.name} added to cart!`, {
+      duration: 2500,
       style: {
         borderRadius: "16px",
         background: "linear-gradient(135deg, #1f4d2e, #163822)",
         color: "#fff",
         padding: "14px 18px",
-        fontWeight: "600"
+        fontWeight: "600",
+        boxShadow: "0 10px 30px rgba(0, 0, 0, 0.35)",
+        zIndex: 999999999
       },
       iconTheme: { primary: "#d8ef7f", secondary: "#1f4d2e" }
     });
@@ -270,132 +282,226 @@ function HeaderSearchBar({ navbarScrolled, navTextColor }) {
 
   const handleKeyDown = (e) => {
     if (e.key === "Escape") {
-      setIsOpen(false);
+      handleCloseModal();
     } else if (e.key === "Enter" && matchingProducts.length > 0) {
       handleSelectProduct(matchingProducts[0]);
     }
   };
 
   return (
-    <div className={`header-search-container ${isExpandedMobile ? "mobile-expanded" : ""}`} ref={searchRef}>
-      {/* SEARCH BOX INPUT */}
-      <div className={`search-input-wrapper ${navbarScrolled ? "scrolled" : ""}`}>
-        <FiSearch className="search-icon" style={{ color: navbarScrolled ? "#d8ef7f" : navTextColor }} />
-        
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={handleInputChange}
-          onFocus={() => query.trim() && setIsOpen(true)}
-          onKeyDown={handleKeyDown}
-          placeholder="Search products..."
-          className="header-search-input"
-          style={{
-            color: navbarScrolled ? "#ffffff" : navTextColor,
-          }}
-        />
-
-        {query && (
-          <button
-            onClick={() => {
-              setQuery("");
-              setIsOpen(false);
+    <>
+      {/* NAVBAR SEARCH TRIGGER BUTTON / BAR */}
+      <div
+        className="header-search-container"
+        onClick={() => setIsModalOpen(true)}
+      >
+        {/* DESKTOP SEARCH TRIGGER BAR */}
+        <div
+          className={`search-input-wrapper ${navbarScrolled ? "scrolled" : ""}`}
+        >
+          <FiSearch
+            className="search-icon"
+            style={{ color: navbarScrolled ? "#d8ef7f" : navTextColor }}
+          />
+          <input
+            type="text"
+            readOnly
+            placeholder="Search products..."
+            className="header-search-input"
+            style={{
+              color: navbarScrolled ? "#ffffff" : navTextColor,
+              cursor: "pointer"
             }}
-            className="search-clear-btn"
-            title="Clear search"
-          >
-            <FiX size={16} />
-          </button>
-        )}
+          />
+        </div>
+
+        {/* MOBILE SEARCH TRIGGER ICON BUTTON */}
+        <button
+          className="mobile-search-toggle"
+          style={{ color: navTextColor }}
+          aria-label="Open Search Popup"
+          title="Search Products"
+        >
+          <FiSearch size={22} />
+        </button>
       </div>
 
-      {/* MOBILE TOGGLE SEARCH BUTTON */}
-      <button
-        className="mobile-search-toggle"
-        onClick={() => setIsExpandedMobile(!isExpandedMobile)}
-        style={{ color: navTextColor }}
-        title="Search Products"
-      >
-        {isExpandedMobile ? <FiX size={22} /> : <FiSearch size={22} />}
-      </button>
-
-      {/* LIVE DROPDOWN RESULTS */}
-      {isOpen && (
-        <div className="search-dropdown-menu">
-          <div className="search-dropdown-header">
-            <span>
-              Available Products ({matchingProducts.length})
-            </span>
-            {query && (
-              <span className="search-query-tag">"{query}"</span>
-            )}
-          </div>
-
-          {matchingProducts.length === 0 ? (
-            <div className="search-no-results">
-              <p>No products matching "{query}"</p>
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  navigate("/shop");
-                }}
-                className="view-all-btn"
-              >
-                Browse Shop Collection →
-              </button>
-            </div>
-          ) : (
-            <div className="search-results-list">
-              {matchingProducts.slice(0, 6).map((product) => (
-                <div
-                  key={product._id}
-                  className="search-result-card"
-                  onClick={() => handleSelectProduct(product)}
-                >
-                  <img
-                    src={product.image || moringaImg}
-                    alt={product.name}
-                    className="result-thumb"
+      {/* POPUP SEARCH SCREEN MODAL - PORTALED TO DOCUMENT.BODY */}
+      {isModalOpen &&
+        createPortal(
+          <div
+            className="search-popup-overlay"
+            onClick={handleCloseModal}
+          >
+            <div
+              className="search-popup-container"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* POPUP TOP BAR / HEADER */}
+              <div className="search-popup-header">
+                <div className="search-popup-input-box">
+                  <FiSearch className="search-popup-input-icon" />
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Search herbal powders, seeds..."
+                    className="search-popup-input"
                   />
+                  {query && (
+                    <button
+                      className="search-popup-clear-btn"
+                      onClick={() => setQuery("")}
+                      title="Clear search"
+                    >
+                      <FiX size={18} />
+                    </button>
+                  )}
+                </div>
 
-                  <div className="result-details">
-                    <h4 className="result-name">{product.name}</h4>
-                    <div className="result-meta">
-                      <span className="result-category">{product.category}</span>
-                      <span className="result-price">₹{product.price}</span>
+                <button
+                  className="search-popup-close-btn"
+                  onClick={handleCloseModal}
+                  aria-label="Close search"
+                >
+                  <FiX size={22} />
+                  <span className="close-text">Cancel</span>
+                </button>
+              </div>
+
+              {/* POPUP BODY CONTENT */}
+              <div className="search-popup-body">
+                {!query.trim() ? (
+                  /* DEFAULT VIEW: TRENDING & CATEGORIES */
+                  <div className="search-popup-default-view">
+                    <div className="search-popup-section">
+                      <h4 className="section-title">
+                        <FiTrendingUp className="title-icon" />
+                        Trending Searches
+                      </h4>
+                      <div className="trending-chips-grid">
+                        {TRENDING_SEARCHES.map((item, idx) => (
+                          <button
+                            key={idx}
+                            className="trending-chip"
+                            onClick={() => setQuery(item)}
+                          >
+                            <FiSearch size={13} />
+                            {item}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="search-popup-section">
+                      <h4 className="section-title">
+                        <FiGrid className="title-icon" />
+                        Browse Popular Categories
+                      </h4>
+                      <div className="category-chips-grid">
+                        {POPULAR_CATEGORIES.map((cat, idx) => (
+                          <button
+                            key={idx}
+                            className="category-chip"
+                            onClick={() => {
+                              setQuery(cat);
+                            }}
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
+                ) : (
+                  /* LIVE RESULTS VIEW */
+                  <div className="search-popup-results-view">
+                    <div className="search-results-summary">
+                      <span>
+                        Matching Products ({matchingProducts.length})
+                      </span>
+                      <span className="query-highlight">"{query}"</span>
+                    </div>
 
-                  <button
-                    className="result-add-cart-btn"
-                    onClick={(e) => handleAddToCart(product, e)}
-                    title="Add to Cart"
-                  >
-                    <FiShoppingCart size={15} />
-                    <span className="btn-text">Add</span>
-                  </button>
-                </div>
-              ))}
+                    {matchingProducts.length === 0 ? (
+                      <div className="search-popup-no-results">
+                        <div className="no-results-icon">🌿</div>
+                        <h3>No products found</h3>
+                        <p>We couldn't find any products matching "{query}"</p>
+                        <button
+                          className="browse-shop-btn"
+                          onClick={() => {
+                            handleCloseModal();
+                            navigate("/shop");
+                          }}
+                        >
+                          Explore All Products in Shop →
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="search-popup-results-grid">
+                        {matchingProducts.map((product) => (
+                          <div
+                            key={product._id}
+                            className="search-popup-card"
+                            onClick={() => handleSelectProduct(product)}
+                          >
+                            <img
+                              src={product.image || moringaImg}
+                              alt={product.name}
+                              className="card-thumb"
+                            />
+                            <div className="card-info">
+                              <span className="card-cat">{product.category}</span>
+                              <h4 className="card-name">{product.name}</h4>
+                              <p className="card-desc">{product.description}</p>
+                              <div className="card-bottom">
+                                <span className="card-price">₹{product.price}</span>
+                                <button
+                                  className={`card-add-btn ${addedProductId === product._id ? "added" : ""}`}
+                                  onClick={(e) => handleAddToCart(product, e)}
+                                >
+                                  {addedProductId === product._id ? (
+                                    <span>Added ✓</span>
+                                  ) : (
+                                    <>
+                                      <FiShoppingCart size={15} />
+                                      <span>Add</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
-              {matchingProducts.length > 6 && (
-                <div
-                  className="search-view-more"
-                  onClick={() => {
-                    setIsOpen(false);
-                    navigate("/shop");
-                  }}
-                >
-                  <span>See all {matchingProducts.length} results</span>
-                  <FiArrowRight />
-                </div>
-              )}
+                    {matchingProducts.length > 0 && (
+                      <div
+                        className="search-popup-footer-action"
+                        onClick={() => {
+                          handleCloseModal();
+                          navigate("/shop");
+                        }}
+                      >
+                        <span>View all products in shop</span>
+                        <FiArrowRight />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-      )}
-    </div>
+          </div>,
+          document.body
+        )}
+    </>
   );
 }
 
 export default HeaderSearchBar;
+
+
