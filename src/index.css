@@ -216,7 +216,8 @@ PREMIUM NAVBAR
   justify-content: center;
 }
 
-.mobile-menu-btn {
+.mobile-menu-btn,
+.mobile-drawer-admin-link {
   display: none;
 }
 
@@ -227,7 +228,8 @@ PREMIUM NAVBAR
 }
 
 @media (min-width: 1025px) {
-  .mobile-menu-btn {
+  .mobile-menu-btn,
+  .mobile-drawer-admin-link {
     display: none !important;
   }
   .nav-links {
@@ -1892,6 +1894,10 @@ RESPONSIVE MEDIA QUERIES
 ========================================= */
 
 @media (max-width: 1024px) {
+  .mobile-drawer-admin-link {
+    display: block !important;
+  }
+
   .nav-inner {
     padding: 0;
   }
