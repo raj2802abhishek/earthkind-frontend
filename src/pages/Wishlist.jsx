@@ -803,6 +803,7 @@ function Wishlist() {
 
                   {/* ADD TO CART */}
                   <button
+                    className="wishlist-btn-cart"
                     disabled={currentStock === 0}
                     onClick={(e) => addToCart(item, e)}
                     onMouseEnter={(e) => {
@@ -845,10 +846,11 @@ function Wishlist() {
                   </button>
 
                   {/* NOTE */}
-                  <div style={{ position: "relative" }}>
+                  <div className="wishlist-btn-note-wrapper" style={{ position: "relative" }}>
 
 
                     <button
+                      className="wishlist-btn-note"
                       onClick={() =>
                         setShowNoteBox(
                           showNoteBox === item._id
@@ -922,6 +924,7 @@ function Wishlist() {
 
                   {/* SHARE */}
                   <button
+                    className="wishlist-btn-share"
                     onClick={() => {
                       if (navigator.share) {
                         navigator.share({
@@ -940,6 +943,7 @@ function Wishlist() {
 
                   {/* REMOVE */}
                   <button
+                    className="wishlist-btn-remove"
                     onClick={(e) => {
 
                       e.currentTarget.innerHTML = "💔";
