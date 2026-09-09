@@ -148,10 +148,18 @@ const DEFAULT_PRODUCTS = [
 function HeaderSearchBar({ navbarScrolled, navTextColor }) {
   const navigate = useNavigate();
   const searchRef = useRef(null);
+  const inputRef = useRef(null);
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
   const [isExpandedMobile, setIsExpandedMobile] = useState(false);
+
+  // Auto-focus search input when expanded on mobile
+  useEffect(() => {
+    if (isExpandedMobile && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isExpandedMobile]);
 
   // Fetch products from backend or use fallback
   useEffect(() => {
@@ -275,6 +283,7 @@ function HeaderSearchBar({ navbarScrolled, navTextColor }) {
         <FiSearch className="search-icon" style={{ color: navbarScrolled ? "#d8ef7f" : navTextColor }} />
         
         <input
+          ref={inputRef}
           type="text"
           value={query}
           onChange={handleInputChange}
