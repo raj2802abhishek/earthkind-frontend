@@ -227,6 +227,9 @@ PREMIUM NAVBAR
 }
 
 @media (min-width: 1025px) {
+  .mobile-menu-btn {
+    display: none !important;
+  }
   .nav-links {
     position: static;
     transform: none;
@@ -872,7 +875,7 @@ NAVBAR & MOBILE DRAWER STYLES
 }
 
 .mobile-menu-btn {
-  display: none;
+  display: none !important;
   flex-direction: column;
   gap: 5px;
   cursor: pointer;
