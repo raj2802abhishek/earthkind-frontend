@@ -19,13 +19,26 @@ function LiveChatWidget() {
     return null;
   }
 
+  // Get logged-in user if available
+  const loggedInUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user")) || null;
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  const initialEmail =
+    localStorage.getItem("user_contact_email") || loggedInUser?.email || "";
+  const initialName =
+    localStorage.getItem("user_contact_name") ||
+    loggedInUser?.name ||
+    loggedInUser?.fullName ||
+    (loggedInUser?.email ? loggedInUser.email.split("@")[0] : "");
+
   const [isOpen, setIsOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState(
-    localStorage.getItem("user_contact_email") || ""
-  );
-  const [userName, setUserName] = useState(
-    localStorage.getItem("user_contact_name") || ""
-  );
+  const [userEmail, setUserEmail] = useState(initialEmail);
+  const [userName, setUserName] = useState(initialName);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
@@ -41,10 +54,33 @@ function LiveChatWidget() {
 
   const chatEndRef = useRef(null);
 
-  const API_BASE =
-    typeof window !== "undefined" && window.location.hostname === "localhost"
-      ? "http://localhost:5000"
-      : (import.meta.env.VITE_API_URL || "http://localhost:5000");
+  const getApiBase = () => {
+    if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.startsWith("192.168.")) {
+        return `${window.location.protocol}//${hostname}:5000`;
+      }
+    }
+    return "http://localhost:5000";
+  };
+  const API_BASE = getApiBase();
+
+  // Sync user profile if user logs in / out
+  useEffect(() => {
+    const handleUserChanged = () => {
+      try {
+        const u = JSON.parse(localStorage.getItem("user"));
+        if (u?.email) {
+          setUserEmail(u.email);
+          setUserName(u.name || u.fullName || u.email.split("@")[0]);
+        }
+      } catch (e) {}
+    };
+
+    window.addEventListener("userChanged", handleUserChanged);
+    return () => window.removeEventListener("userChanged", handleUserChanged);
+  }, []);
 
   // Real-time polling every 3 seconds for Customer
   useEffect(() => {
