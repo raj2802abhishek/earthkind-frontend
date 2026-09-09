@@ -173,6 +173,7 @@ function AnimatedProducts({ products, title, onBack }) {
       <button
         onClick={() => scrollByAmount(-520)}
         aria-label="Scroll products left"
+        className="animated-nav-btn animated-nav-left"
         style={{
           position: "absolute",
           left: "-10px",
@@ -195,6 +196,7 @@ function AnimatedProducts({ products, title, onBack }) {
       <button
         onClick={() => scrollByAmount(520)}
         aria-label="Scroll products right"
+        className="animated-nav-btn animated-nav-right"
         style={{
           position: "absolute",
           right: "-10px",
@@ -217,6 +219,7 @@ function AnimatedProducts({ products, title, onBack }) {
       {/* PRODUCT ROW */}
       <div
         ref={scrollRef}
+        className="animated-products-row"
         style={{
           display: "flex",
           gap: "30px",
@@ -254,6 +257,7 @@ function AnimatedProducts({ products, title, onBack }) {
           >
             {/* IMAGE */}
             <div
+              className="animated-product-img-wrapper"
               style={{
                 width: "320px",
                 minWidth: "320px",
@@ -295,6 +299,7 @@ function AnimatedProducts({ products, title, onBack }) {
 
             {/* CONTENT */}
             <div
+              className="animated-product-content"
               style={{
                 flex: 1,
                 display: "flex",
@@ -304,6 +309,7 @@ function AnimatedProducts({ products, title, onBack }) {
               }}
             >
               <p
+                className="animated-product-badge"
                 style={{
                   color: "#234d2c",
                   textTransform: "uppercase",
@@ -317,6 +323,7 @@ function AnimatedProducts({ products, title, onBack }) {
               </p>
 
               <h3
+                className="animated-product-title"
                 style={{
                   fontFamily: "'Cormorant Garamond', serif",
                   fontSize: "clamp(42px, 5vw, 62px)",
@@ -329,7 +336,7 @@ function AnimatedProducts({ products, title, onBack }) {
               </h3>
 
               <p
-                className="section-text"
+                className="section-text animated-product-desc"
                 style={{
                   maxWidth: "780px",
                   marginBottom: "28px",
@@ -341,6 +348,7 @@ function AnimatedProducts({ products, title, onBack }) {
               </p>
 
               <div
+                className="animated-product-bottom-row"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -350,7 +358,7 @@ function AnimatedProducts({ products, title, onBack }) {
                   marginTop: "auto",
                 }}
               >
-                <div>
+                <div className="animated-product-price-box">
                   <p
                     style={{
                       color: "#6b6b6b",
@@ -377,6 +385,7 @@ function AnimatedProducts({ products, title, onBack }) {
                 </div>
 
                 <div
+                  className="animated-product-actions"
                   style={{
                     display: "flex",
                     alignItems: "center",
