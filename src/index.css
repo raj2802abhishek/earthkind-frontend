@@ -2488,13 +2488,14 @@ body,
 
 @media (max-width: 768px) {
   .wishlist-page-container {
-    padding-top: 105px !important;
+    padding-top: 16px !important;
     padding-left: 14px !important;
     padding-right: 14px !important;
   }
 
   .wishlist-header-box {
-    margin-bottom: 24px !important;
+    margin-top: 0 !important;
+    margin-bottom: 16px !important;
   }
 
   .wishlist-title {
