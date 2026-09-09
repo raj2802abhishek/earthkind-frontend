@@ -914,19 +914,7 @@ function Wishlist() {
                         : "Add Note"}
                     </button>
                     {showNoteBox === item._id && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: "55px",
-                          left: 0,
-                          background: "#fff",
-                          padding: "15px",
-                          borderRadius: "12px",
-                          boxShadow:
-                            "0 8px 20px rgba(0,0,0,0.12)",
-                          zIndex: 9999
-                        }}
-                      >
+                      <div className="wishlist-note-popover">
                         <textarea
                           autoFocus
                           placeholder="Write note..."
@@ -934,25 +922,24 @@ function Wishlist() {
                           onChange={(e) =>
                             saveNote(item._id, e.target.value)
                           }
-
                           onKeyDown={(e) => {
-                            if (e.key === "Enter") {
+                            if (e.key === "Enter" && !e.shiftKey) {
                               e.preventDefault();
                               setShowNoteBox(null);
                             }
                           }}
-                          style={{
-                            width: "220px",
-                            height: "90px",
-                            border: "1px solid #ddd",
-                            borderRadius: "10px",
-                            padding: "10px",
-                            resize: "none",
-                            outline: "none"
-                          }}
+                          className="wishlist-note-textarea"
                         />
+                        <div className="wishlist-note-popover-actions">
+                          <button
+                            type="button"
+                            className="wishlist-note-save-btn"
+                            onClick={() => setShowNoteBox(null)}
+                          >
+                            Done
+                          </button>
+                        </div>
                       </div>
-
                     )}
                   </div>
 
