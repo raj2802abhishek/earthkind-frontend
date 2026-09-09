@@ -884,36 +884,25 @@ const overlay = {
   padding: "16px",
   zIndex: 999999999
 };
+
 const modal = {
-  width: window.innerWidth < 768 ? "92vw" : "100%",
-  maxWidth: window.innerWidth < 768 ? "340px" : "980px",
-
-  height: window.innerWidth < 768 ? "auto" : "620px",
-
+  width: "min(92vw, 920px)",
+  maxWidth: "920px",
+  height: "auto",
+  minHeight: "540px",
   display: "flex",
-
-  flexDirection:
-    window.innerWidth < 768 ? "column" : "row",
-
+  flexDirection: "row",
   borderRadius: "30px",
-
   overflow: "hidden",
-
   background: "#ffffff",
-
   border: "1px solid #ebebeb",
-
   position: "relative",
-
-  boxShadow:
-    "0 25px 70px rgba(0,0,0,0.12)",
-
+  boxShadow: "0 25px 70px rgba(0,0,0,0.12)",
   animation: "popup 0.4s ease forwards",
-
   margin: "auto",
-
-  
+  boxSizing: "border-box"
 };
+
 const leftSlider = {
   width: "50%",
   position: "relative",
@@ -934,24 +923,24 @@ const sliderImage = {
 const sliderOverlay = {
   position: "absolute",
   inset: 0,
-  background:
-    "linear-gradient(to top, rgba(0,0,0,0.28), rgba(0,0,0,0.10))",
+  background: "linear-gradient(to top, rgba(0,0,0,0.28), rgba(0,0,0,0.10))",
   zIndex: 2
 };
 
 const right = {
   width: "50%",
   background: "#ffffff",
-  padding: "55px 50px",
+  padding: "45px 36px",
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
-  position: "relative"
+  position: "relative",
+  boxSizing: "border-box"
 };
 
 const input = {
   width: "100%",
-  height: "56px",
+  height: "54px",
   padding: "0 18px",
   marginTop: "14px",
   borderRadius: "16px",
@@ -965,20 +954,23 @@ const input = {
 
 const button = {
   width: "100%",
-  height: "56px",
+  height: "54px",
   marginTop: "18px",
-  background:
-    "linear-gradient(135deg,#234d2c,#2f6b3c)",
+  background: "linear-gradient(135deg,#234d2c,#2f6b3c)",
   color: "#fff",
   border: "none",
   borderRadius: "16px",
   cursor: "pointer",
   fontWeight: "700",
   fontSize: "16px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   transition: "all 0.3s ease",
-  boxShadow:
-    "0 10px 25px rgba(35,77,44,0.18)"
+  boxShadow: "0 10px 25px rgba(35,77,44,0.18)",
+  boxSizing: "border-box"
 };
+
 const closeButton = {
   position: "absolute",
   top: "14px",
@@ -1002,7 +994,8 @@ const linkText = {
   color: "#234d2c",
   cursor: "pointer",
   fontWeight: "600",
-  fontSize: "16px"
+  fontSize: "15px",
+  marginTop: "12px"
 };
 
 const smallLink = {
@@ -1052,14 +1045,15 @@ const responsiveStyles = `
 @media (max-width: 768px){
 
   .auth-modal{
-    width: 90vw !important;
-    max-width: 380px !important;
+    width: 92vw !important;
+    max-width: 440px !important;
     height: auto !important;
-    min-height: unset !important;
+    min-height: auto !important;
     flex-direction: column !important;
     border-radius: 28px !important;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2) !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25) !important;
     margin: auto !important;
+    box-sizing: border-box !important;
   }
 
   .auth-left{
@@ -1068,31 +1062,38 @@ const responsiveStyles = `
 
   .auth-right{
     width: 100% !important;
-    padding: 34px 24px 28px !important;
+    padding: 34px 22px 28px !important;
     box-sizing: border-box !important;
   }
 
   .auth-right h2 {
     font-size: 24px !important;
-    margin-bottom: 22px !important;
+    margin-bottom: 20px !important;
     letter-spacing: -0.5px !important;
   }
 
   .auth-right input {
+    width: 100% !important;
     height: 52px !important;
     font-size: 15px !important;
-    border-radius: 999px !important;
-    padding: 0 20px !important;
+    border-radius: 16px !important;
+    padding: 0 18px !important;
     margin-top: 10px !important;
     border: 1px solid #e0e0e0 !important;
+    box-sizing: border-box !important;
   }
 
   .auth-right button {
+    width: 100% !important;
     height: 52px !important;
     font-size: 16px !important;
-    border-radius: 999px !important;
+    border-radius: 16px !important;
     margin-top: 16px !important;
-    background: #234d2c !important;
+    background: linear-gradient(135deg,#234d2c,#2f6b3c) !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
 }
@@ -1100,13 +1101,14 @@ const responsiveStyles = `
 @media (max-width: 480px){
 
   .auth-modal{
-    width: 92vw !important;
-    max-width: 350px !important;
-    border-radius: 26px !important;
+    width: 94vw !important;
+    max-width: 420px !important;
+    border-radius: 24px !important;
   }
 
   .auth-right{
-    padding: 30px 20px 24px !important;
+    padding: 28px 18px 24px !important;
+    box-sizing: border-box !important;
   }
 
 }
