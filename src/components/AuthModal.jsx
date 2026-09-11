@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import logo from "../assets/logo.png";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -11,9 +11,9 @@ import slide2 from "../assets/login/slide2.png";
 import slide3 from "../assets/login/slide3.png";
 import slide4 from "../assets/login/slide4.png";
 
-function AuthModal({ close }) {
+function AuthModal({ close, initialStep = 1 }) {
   // ---------------- STATES ----------------
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(initialStep);
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [email, setEmail] = useState("");
@@ -28,6 +28,7 @@ function AuthModal({ close }) {
   const [success, setSuccess] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   // ---------------- SLIDER ----------------
   const slides = [slide1, slide2, slide3, slide4];
@@ -57,7 +58,7 @@ function AuthModal({ close }) {
   };
 
   const handlePostAuthNavigate = (userData) => {
-    const redirectPath = localStorage.getItem("redirectAfterLogin");
+    const redirectPath = location.state?.redirectTo || localStorage.getItem("redirectAfterLogin");
     localStorage.removeItem("redirectAfterLogin");
     if (userData?.isAdmin) {
       navigate("/admin");
@@ -67,6 +68,7 @@ function AuthModal({ close }) {
       navigate("/account");
     }
   };
+
 
   // ---------------- EMAIL LOGIN ----------------
   const handleEmailLogin = async () => {
